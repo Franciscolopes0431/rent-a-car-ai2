@@ -1,0 +1,39 @@
+import axiosClient from '../api/axiosClient';
+
+export const register = (payload) => axiosClient.post('/auth/register', payload);
+
+export const checkEmail = (email) =>
+  axiosClient.get('/auth/check-email', {
+    params: { email },
+  });
+
+const authService = {
+  login: async ({ email, password, rememberMe }) => {
+    const response = await axiosClient.post('/auth/login', {
+      email,
+      password,
+      rememberMe,
+    });
+
+    return response.data;
+  },
+
+  register: async (payload) => {
+    const response = await register(payload);
+    return response.data;
+  },
+
+  checkEmail,
+
+  googleAuth: async () => {
+    const response = await axiosClient.post('/auth/google');
+    return response.data;
+  },
+
+  appleAuth: async () => {
+    const response = await axiosClient.post('/auth/apple');
+    return response.data;
+  },
+};
+
+export default authService;

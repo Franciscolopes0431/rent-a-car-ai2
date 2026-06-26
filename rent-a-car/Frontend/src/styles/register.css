@@ -1,0 +1,226 @@
+.register-page {
+  min-height: 100vh;
+  background: var(--rc-bg-dark);
+}
+
+.rc-register-hero-panel {
+  min-height: 100vh;
+  width: 100%;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+.rc-register-hero-content {
+  min-height: 100vh;
+  padding: 2.25rem 3rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.rc-register-hero-bottom {
+  max-width: 29rem;
+}
+
+.rc-register-hero-title {
+  margin: 0;
+  font-size: 2.4rem;
+  line-height: 1.1;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.rc-register-hero-title span {
+  color: var(--rc-yellow);
+}
+
+.rc-register-hero-subtitle {
+  margin-top: 0.85rem;
+  margin-bottom: 1.6rem;
+  color: var(--rc-text-secondary);
+  font-size: 0.92rem;
+  max-width: 26rem;
+}
+
+.rc-register-benefits {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.65rem;
+}
+
+.rc-register-benefits li {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.rc-register-benefits .bi {
+  color: var(--rc-yellow);
+  font-size: 0.92rem;
+}
+
+.rc-register-benefits span {
+  color: #d2d2d7;
+  font-size: 0.9rem;
+}
+
+.rc-register-right-panel {
+  min-height: 100vh;
+  background: var(--rc-panel-dark);
+  padding: 2rem 1.25rem;
+}
+
+.rc-register-form-wrapper {
+  width: 100%;
+  max-width: 28.75rem;
+}
+
+.rc-register-kicker {
+  margin-bottom: 0.7rem;
+  color: var(--rc-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 0.66rem;
+  font-weight: 500;
+}
+
+.rc-register-title {
+  margin: 0;
+  font-size: 2rem;
+  line-height: 1.1;
+  text-transform: uppercase;
+  font-weight: 800;
+}
+
+.rc-register-title span {
+  color: var(--rc-yellow);
+}
+
+.rc-register-signin-text {
+  margin-top: 0.75rem;
+  margin-bottom: 0.9rem;
+  color: var(--rc-text-secondary);
+  font-size: 0.9rem;
+}
+
+.rc-register-signin-text a {
+  color: var(--rc-yellow);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.rc-register-signin-text a:hover {
+  color: var(--rc-yellow-hover);
+}
+
+.rc-register-step-indicator {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.2rem;
+}
+
+.rc-register-step-segment {
+  flex: 1;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--rc-input-border);
+}
+
+.rc-register-step-segment.is-active {
+  background: var(--rc-yellow);
+}
+
+.rc-register-input-label {
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  color: var(--rc-text-secondary);
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
+
+.rc-register-input-wrap {
+  position: relative;
+}
+
+.rc-register-input-icon {
+  position: absolute;
+  left: 0.85rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--rc-text-muted);
+  pointer-events: none;
+  z-index: 2;
+  font-size: 0.9rem;
+}
+
+.rc-register-input.form-control,
+.rc-register-input.form-control:focus {
+  height: 3rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--rc-input-border);
+  background-color: var(--rc-input-bg);
+  color: var(--rc-text-primary);
+  padding: 0.75rem 0.9rem 0.75rem 2.5rem;
+}
+
+.rc-register-input.form-control::placeholder {
+  color: var(--rc-text-muted);
+}
+
+.rc-register-input.form-control:focus {
+  border-color: var(--rc-yellow);
+  box-shadow: 0 0 0 0.2rem rgba(245, 184, 28, 0.15);
+}
+
+.rc-register-input.form-control.is-invalid,
+.rc-register-input.form-control.is-invalid:focus {
+  border-color: var(--bs-danger);
+  box-shadow: none;
+  background-image: none;
+}
+
+.rc-register-primary-btn.btn {
+  width: 100%;
+  min-height: 3rem;
+  border: 0;
+  border-radius: 0.5rem;
+  background: var(--rc-yellow);
+  color: #0f0f0f;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.rc-register-primary-btn.btn:hover,
+.rc-register-primary-btn.btn:focus {
+  background: var(--rc-yellow-hover);
+  color: #0f0f0f;
+  transform: translateY(-1px);
+}
+
+.rc-register-primary-btn.btn:disabled {
+  opacity: 0.6;
+}
+
+.rc-register-form-wrapper a:focus-visible,
+.rc-register-form-wrapper button:focus-visible,
+.rc-register-form-wrapper input:focus-visible {
+  outline: 2px solid rgba(245, 184, 28, 0.7);
+  outline-offset: 2px;
+}
+
+@media (max-width: 991.98px) {
+  .rc-register-right-panel {
+    padding: 2rem 1rem;
+  }
+}

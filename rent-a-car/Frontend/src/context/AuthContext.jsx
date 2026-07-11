@@ -1,9 +1,9 @@
 import { createContext, useMemo, useReducer } from 'react';
 
 const initialState = {
-  user: null,
-  token: localStorage.getItem('token') || null,
-  isAuthenticated: Boolean(localStorage.getItem('token')),
+  user: { role: 'admin', name: 'Dev User' },
+  token: 'dummy-token',
+  isAuthenticated: true,
 };
 
 const AuthContext = createContext(null);

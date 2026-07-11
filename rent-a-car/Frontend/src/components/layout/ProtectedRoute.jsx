@@ -5,13 +5,16 @@ function ProtectedRoute({ role }) {
   const { isAuthenticated, user } = useAuth();
   const location = useLocation();
 
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace state={{ from: location }} />;
-  }
+  // if (!isAuthenticated) {
+  //   return <Navigate to="/login" replace state={{ from: location }} />;
+  // }
 
-  if (role && user?.role && user.role !== role) {
-    return <Navigate to="/login" replace />;
-  }
+  // if (role && user?.role) {
+  //   const allowedRoles = Array.isArray(role) ? role : [role];
+  //   if (!allowedRoles.includes(user.role)) {
+  //     return <Navigate to="/login" replace />;
+  //   }
+  // }
 
   return <Outlet />;
 }

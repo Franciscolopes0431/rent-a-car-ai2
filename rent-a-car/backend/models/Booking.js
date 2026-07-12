@@ -38,7 +38,8 @@ module.exports = (sequelize, DataTypes) => {
         field: 'total_price',
       },
       status: {
-        type: DataTypes.ENUM('Pendente', 'Confirmada', 'Em curso', 'Concluída', 'Cancelada'),
+        type: DataTypes.STRING(20),
+        allowNull: false,
         defaultValue: 'Pendente',
       },
     },

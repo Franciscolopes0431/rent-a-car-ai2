@@ -1,10 +1,10 @@
 import { Container, Row, Col, Card, Button, Spinner, Form, Modal } from 'react-bootstrap';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useBookings } from '../../../hooks/useBookings';
-import Pagination from '../../common/Pagination';
-import EmptyState from '../../common/EmptyState';
-import StatusBadge from '../../common/StatusBadge';
+import { useBookings } from '../../hooks/useBookings';
+import Pagination from '../../components/common/Pagination';
+import EmptyState from '../../components/common/EmptyState';
+import StatusBadge from '../../components/common/StatusBadge';
 
 function MyBookingsPage() {
   const { bookings, pagination, filters, setFilters, setPagination, isLoading, error, statusOptions } = useBookings();

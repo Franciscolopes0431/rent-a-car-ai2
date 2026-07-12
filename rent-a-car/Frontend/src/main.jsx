@@ -7,6 +7,7 @@ import './styles/login.css';
 import './styles/register.css';
 import './styles/dashboard.css';
 import './styles/customer.css';
+import './styles/landing.css';
 import App from './App';
 import { AuthProvider } from './context/AuthContext';
 

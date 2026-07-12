@@ -1,0 +1,52 @@
+:root {
+  --rc-landing-hero-height: 520px;
+}
+
+.rc-landing-navbar {
+  padding: 1.25rem 0;
+  backdrop-filter: blur(6px);
+  background: rgba(28,28,30,0.45);
+  border-bottom: 1px solid var(--rc-border);
+}
+
+.rc-landing-hero {
+  position: relative;
+  min-height: var(--rc-landing-hero-height);
+  background-position: center;
+  background-size: cover;
+  display: flex;
+  align-items: center;
+}
+
+.rc-landing-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(rgba(8,8,9,0.6), rgba(8,8,9,0.6));
+}
+
+.rc-landing-hero-content {
+  position: relative;
+  z-index: 2;
+  padding: 3rem 1rem;
+}
+
+.rc-landing-hero-title {
+  font-size: 2.6rem;
+  font-weight: 800;
+  color: var(--rc-text-primary);
+  margin-bottom: 0.6rem;
+}
+
+.rc-landing-hero-subtitle { color: var(--rc-text-secondary); margin-bottom: 1.5rem; }
+
+.rc-landing-search .rc-landing-input { min-width: 160px; border-radius: 0.5rem; }
+.rc-landing-cta { background: var(--rc-yellow); color: #0f0f0f; border: 0; padding: 0.6rem 1rem; border-radius: 0.5rem; }
+.rc-landing-cta:hover, .rc-landing-cta:focus { background: var(--rc-yellow-hover); }
+
+.rc-landing-footer { padding: 3rem 0; border-top: 1px solid var(--rc-border); background: transparent; }
+.rc-landing-footer h5 { color: var(--rc-text-primary); }
+
+@media (max-width: 767px) {
+  .rc-landing-hero-title { font-size: 1.6rem; }
+  .rc-landing-hero { min-height: 380px; }
+}

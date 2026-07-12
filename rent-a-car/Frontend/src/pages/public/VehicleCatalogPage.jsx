@@ -1,8 +1,8 @@
 import { Container, Row, Col, Card, Button, Form, Spinner } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-import { useFleet } from '../../../hooks/useFleet';
-import Pagination from '../../common/Pagination';
-import EmptyState from '../../common/EmptyState';
+import { useFleet } from '../../hooks/useFleet';
+import Pagination from '../../components/common/Pagination';
+import EmptyState from '../../components/common/EmptyState';
 
 function VehicleCatalogPage() {
   const { vehicles, pagination, filters, setFilters, setPagination, isLoading, error, categoryOptions } = useFleet();

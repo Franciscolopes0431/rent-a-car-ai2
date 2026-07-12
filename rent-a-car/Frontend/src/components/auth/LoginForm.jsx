@@ -84,8 +84,13 @@ function LoginForm() {
       }
 
       localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(response.user || null));
       login({ token, user: response?.user || null });
-      navigate('/admin');
+      // Role-aware redirect
+      const role = response.user?.role;
+      if (role === 'admin') navigate('/admin');
+      else if (role === 'gestor') navigate('/gestor');
+      else navigate('/minhas-reservas');
     } catch (error) {
       const message = error?.response?.data?.message || error?.message || 'Não foi possível entrar na conta.';
       setApiError(message);

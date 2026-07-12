@@ -8,13 +8,16 @@ function ProtectedRoute({ role }) {
   // if (!isAuthenticated) {
   //   return <Navigate to="/login" replace state={{ from: location }} />;
   // }
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace state={{ from: location }} />;
+  }
 
-  // if (role && user?.role) {
-  //   const allowedRoles = Array.isArray(role) ? role : [role];
-  //   if (!allowedRoles.includes(user.role)) {
-  //     return <Navigate to="/login" replace />;
-  //   }
-  // }
+  if (role) {
+    const allowedRoles = Array.isArray(role) ? role : [role];
+    if (!user || !allowedRoles.includes(user.role)) {
+      return <Navigate to="/login" replace />;
+    }
+  }
 
   return <Outlet />;
 }

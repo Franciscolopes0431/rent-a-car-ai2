@@ -7,14 +7,15 @@ const {
   deleteVehicle,
   changeVehicleStatus,
 } = require('../controllers/vehicleController');
+const { authenticate, authorize } = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
 router.get('/', listVehicles);
 router.get('/:id', getVehicle);
-router.post('/', createVehicle);
-router.put('/:id', updateVehicle);
-router.delete('/:id', deleteVehicle);
-router.patch('/:id/status', changeVehicleStatus);
+router.post('/', authenticate, authorize(['admin']), createVehicle);
+router.put('/:id', authenticate, authorize(['admin']), updateVehicle);
+router.delete('/:id', authenticate, authorize(['admin']), deleteVehicle);
+router.patch('/:id/status', authenticate, authorize(['admin']), changeVehicleStatus);
 
 module.exports = router;

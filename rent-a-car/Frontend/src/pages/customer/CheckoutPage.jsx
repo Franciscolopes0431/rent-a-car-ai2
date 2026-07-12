@@ -1,7 +1,7 @@
 import { Container, Row, Col, Button, Form, Card, Alert } from 'react-bootstrap';
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import * as vehicleService from '../../../services/vehicleService';
+import * as vehicleService from '../../services/vehicleService';
 
 function CheckoutPage() {
   const [searchParams] = useSearchParams();

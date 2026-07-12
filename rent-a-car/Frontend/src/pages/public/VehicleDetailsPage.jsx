@@ -1,8 +1,8 @@
 import { Container, Row, Col, Button, Spinner, Table, Form } from 'react-bootstrap';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import * as vehicleService from '../../../services/vehicleService';
-import { useAuth } from '../../../hooks/useAuth';
+import * as vehicleService from '../../services/vehicleService';
+import { useAuth } from '../../hooks/useAuth';
 
 function VehicleDetailsPage() {
   const { id } = useParams();

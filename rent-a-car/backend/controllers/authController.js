@@ -1,5 +1,9 @@
 const { randomUUID } = require('crypto');
 const { User } = require('../models');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+
+const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-me';
 
 function toPublicUser(user) {
   return {
@@ -24,19 +28,19 @@ async function login(req, res, next) {
       where: { email: String(email).trim().toLowerCase() },
     });
 
-    if (!user || user.password !== password) {
-      return res.status(401).json({
-        message: 'Credenciais invalidas.',
-      });
-    }
+      if (!user) {
+        return res.status(401).json({ message: 'Invalid credentials.' });
+      }
 
-    // Token de desenvolvimento para destravar o fluxo frontend.
-    const token = `dev-${user.id}-${randomUUID()}`;
+      const match = await bcrypt.compare(String(password), user.password);
+      if (!match) {
+        return res.status(401).json({ message: 'Invalid credentials.' });
+      }
 
-    return res.json({
-      token,
-      user: toPublicUser(user),
-    });
+      const payload = { id: user.id, role: user.tipo, email: user.email, name: user.nome };
+      const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '2h' });
+
+      return res.json({ token, user: toPublicUser(user) });
   } catch (error) {
     return next(error);
   }
@@ -59,10 +63,11 @@ async function register(req, res, next) {
       return res.status(409).json({ message: 'Email ja registado.' });
     }
 
+    const hashed = await bcrypt.hash(String(password), 10);
     const user = await User.create({
       nome: String(nome).trim(),
       email: normalizedEmail,
-      password: String(password),
+      password: hashed,
       tipo: tipo === 'admin' ? 'admin' : 'cliente',
     });
 

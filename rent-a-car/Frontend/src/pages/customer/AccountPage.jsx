@@ -1,6 +1,6 @@
 import { Container, Row, Col, Form, Button, Card } from 'react-bootstrap';
 import { useState } from 'react';
-import { useAuth } from '../../../hooks/useAuth';
+import { useAuth } from '../../hooks/useAuth';
 
 function AccountPage() {
   const { user } = useAuth();

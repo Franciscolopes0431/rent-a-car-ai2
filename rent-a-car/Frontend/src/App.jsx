@@ -19,6 +19,7 @@ import GestorCustomersPage from './pages/gestor/customers/GestorCustomersPage';
 import GestorMaintenancePage from './pages/gestor/maintenance/GestorMaintenancePage';
 import GestorReportsPage from './pages/gestor/reports/GestorReportsPage';
 import CustomerLayout from './components/layout/customer/CustomerLayout';
+import LandingPage from './pages/LandingPage';
 import VehicleCatalogPage from './pages/public/VehicleCatalogPage';
 import VehicleDetailsPage from './pages/public/VehicleDetailsPage';
 import AccountPage from './pages/customer/AccountPage';
@@ -45,8 +46,8 @@ function BookingDetailsPlaceholder() {
 function App() {
   return (
     <Routes>
+      <Route path="/" element={<LandingPage />} />
       <Route element={<CustomerLayout />}>
-        <Route path="/" element={<VehicleCatalogPage />} />
         <Route path="/frota" element={<VehicleCatalogPage />} />
         <Route path="/frota/:id" element={<VehicleDetailsPage />} />
         

@@ -1,8 +1,8 @@
 import { Container, Row, Col, Card, Button, Spinner, Table } from 'react-bootstrap';
-import { useBookings } from '../../../hooks/useBookings';
-import Pagination from '../../common/Pagination';
-import EmptyState from '../../common/EmptyState';
-import StatusBadge from '../../common/StatusBadge';
+import { useBookings } from '../../hooks/useBookings';
+import Pagination from '../../components/common/Pagination';
+import EmptyState from '../../components/common/EmptyState';
+import StatusBadge from '../../components/common/StatusBadge';
 
 function HistoryPage() {
   const { bookings, pagination, setPagination, isLoading, error } = useBookings();

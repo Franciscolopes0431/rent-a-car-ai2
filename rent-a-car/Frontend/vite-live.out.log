@@ -1,0 +1,96 @@
+
+> rentcar-frontend@1.0.0 dev
+> vite --host 127.0.0.1
+
+
+  [32m[1mVITE[22m v5.4.21[39m  [2mready in [0m[1m263[22m[2m[0m ms[22m
+
+  [32m➜[39m  [1mLocal[22m:   [36mhttp://127.0.0.1:[1m5173[22m/[39m
+[2m18:22:48[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/public/VehicleCatalogPage.jsx[22m
+[2m18:22:49[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/public/VehicleDetailsPage.jsx[22m
+[2m18:22:50[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/gestor/GestorDashboardPage.jsx, /src/pages/DashboardPage.jsx[22m
+[2m18:22:51[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/dashboard/RecentBookingsTable.jsx[22m
+[2m18:23:05[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/customer/CheckoutPage.jsx[22m
+[2m18:24:38[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/landing/HeroSection.jsx[22m
+[2m18:24:39[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/landing/LandingNavbar.jsx[22m
+[2m18:24:40[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/landing/LandingFooter.jsx[22m
+[2m18:25:14[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.jsx[22m
+[2m18:26:05[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/auth/LoginForm.jsx[22m
+[2m18:26:36[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/customer/MyBookingsPage.jsx[22m
+[2m18:27:23[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.jsx[22m
+[2m18:37:36[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/gestor/bookings/GestorBookingsPage.jsx, /src/pages/bookings/BookingsPage.jsx, /src/pages/customer/HistoryPage.jsx, /src/pages/customer/MyBookingsPage.jsx[22m
+[2m18:37:54[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/bookings/BookingFormModal.jsx[22m
+[2m18:39:00[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/gestor/bookings/GestorBookingFormModal.jsx[22m
+[2m18:39:01[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/bookings/BookingsPage.jsx[22m
+[2m18:39:03[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/gestor/bookings/GestorBookingsPage.jsx[22m
+[2m18:39:24[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/customer/HistoryPage.jsx[22m
+[2m18:39:25[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/bookings/BookingsPage.jsx[22m
+[2m18:39:26[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/gestor/bookings/GestorBookingsPage.jsx[22m
+[2m18:40:26[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/layout/customer/CustomerNavbar.jsx[22m
+[2m18:40:27[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/dashboard/QuickAccessPanel.jsx[22m
+[2m18:40:28[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/gestor/GestorDashboardPage.jsx[22m
+[2m18:40:52[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/dashboard/RecentBookingsTable.jsx[22m
+[2m18:40:53[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/dashboard/FleetStatusPanel.jsx[22m
+[2m18:40:54[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/gestor/GestorDashboardPage.jsx[22m
+[2m18:41:19[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/customer/AccountPage.jsx[22m
+[2m18:41:20[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/customer/AccountPage.jsx[22m
+[2m18:41:34[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/customer/ReviewsPage.jsx[22m
+[2m18:41:35[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/customer/ReviewsPage.jsx[22m
+[2m18:41:36[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/customer/SupportPage.jsx[22m
+[2m18:41:47[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/layout/ProtectedRoute.jsx[22m
+[2m18:41:48[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.jsx[22m
+[2m19:12:59[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/gestor/bookings/GestorBookingsPage.jsx, /src/pages/bookings/BookingsPage.jsx, /src/pages/customer/MyBookingsPage.jsx, /src/pages/customer/CheckoutPage.jsx, /src/pages/gestor/GestorDashboardPage.jsx, /src/pages/DashboardPage.jsx, /src/pages/customer/HistoryPage.jsx, /src/pages/bookings/BookingDetailDrawer.jsx, /src/pages/gestor/bookings/GestorBookingFormModal.jsx, /src/pages/gestor/bookings/GestorBookingDetailDrawer.jsx, /src/pages/bookings/BookingFormModal.jsx[22m
+[2m19:13:23[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/gestor/bookings/GestorBookingsPage.jsx, /src/pages/bookings/BookingsPage.jsx, /src/pages/customer/HistoryPage.jsx, /src/pages/customer/MyBookingsPage.jsx[22m
+[2m19:13:24[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/bookings/BookingFormModal.jsx[22m
+[2m19:13:39[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/bookings/BookingFormModal.jsx[22m
+[2m19:13:51[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/gestor/bookings/GestorBookingFormModal.jsx[22m
+[2m19:14:08[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/bookings/BookingFormModal.jsx[22m
+[2m19:14:09[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/gestor/bookings/GestorBookingFormModal.jsx[22m
+[2m19:14:58[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/bookings/BookingsPage.jsx[22m
+[2m19:15:21[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/bookings/BookingsPage.jsx[22m
+[2m19:15:22[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/common/ConfirmDialog.jsx[22m
+[2m19:15:23[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/common/PageHeader.jsx[22m
+[2m19:15:24[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/common/EmptyState.jsx[22m
+[2m19:15:41[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/bookings/BookingDetailDrawer.jsx[22m
+[2m19:16:12[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/bookings/BookingsPage.jsx[22m
+[2m19:16:14[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/styles/dashboard.css[22m
+[2m19:16:24[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/bookings/BookingFormModal.jsx[22m
+[2m19:16:38[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/bookings/BookingFormModal.jsx[22m
+[2m19:17:53[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/gestor/bookings/GestorBookingsPage.jsx, /src/pages/bookings/BookingsPage.jsx, /src/pages/customer/MyBookingsPage.jsx, /src/pages/customer/CheckoutPage.jsx, /src/pages/gestor/GestorDashboardPage.jsx, /src/pages/DashboardPage.jsx, /src/pages/customer/HistoryPage.jsx, /src/pages/bookings/BookingDetailDrawer.jsx, /src/pages/gestor/bookings/GestorBookingFormModal.jsx, /src/pages/gestor/bookings/GestorBookingDetailDrawer.jsx, /src/pages/bookings/BookingFormModal.jsx[22m
+[2m19:18:16[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/bookings/BookingFormModal.jsx[22m
+[2m19:18:23[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/bookings/BookingFormModal.jsx[22m
+[2m19:18:49[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/layout/TopBar.jsx[22m
+[2m19:46:17[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/auth/LoginForm.jsx[22m
+[2m19:46:17[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/layout/ProtectedRoute.jsx[22m
+[2m19:46:17[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.jsx[22m
+[2m20:45:45[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/auth/RegisterStep2Form.jsx, /src/components/auth/RegisterStep1Form.jsx, /src/components/auth/LoginForm.jsx[22m
+[2m20:45:46[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/context/AuthContext.jsx[22m
+[2m20:46:15[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/customer/AccountPage.jsx[22m
+[2m20:46:16[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/customer/AccountPage.jsx[22m
+[2m20:46:28[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/layout/customer/CustomerNavbar.jsx[22m
+[2m20:46:49[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/customer/MyBookingsPage.jsx[22m
+[2m20:46:50[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/common/EmptyState.jsx[22m
+[2m20:47:12[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/gestor/bookings/GestorBookingsPage.jsx, /src/pages/bookings/BookingsPage.jsx, /src/pages/customer/HistoryPage.jsx, /src/pages/customer/MyBookingsPage.jsx[22m
+[2m20:47:13[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/customer/HistoryPage.jsx[22m
+[2m20:47:41[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/customer/PaymentMethodsPage.jsx[22m
+[2m20:47:42[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/customer/PaymentMethodsPage.jsx[22m
+[2m20:47:58[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/customer/CheckoutPage.jsx[22m
+[2m20:48:18[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/customer/SupportPage.jsx[22m
+[2m20:48:41[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/customer/ReviewsPage.jsx[22m
+[2m20:48:42[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/customer/ReviewsPage.jsx[22m
+[2m20:49:04[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/styles/customer.css[22m
+[2m20:49:26[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/customer/MyBookingsPage.jsx[22m
+[2m20:49:27[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/customer/HistoryPage.jsx[22m
+[2m20:49:28[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/customer/SupportPage.jsx[22m
+[2m20:49:29[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/customer/CheckoutPage.jsx[22m
+[2m20:50:12[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/customer/CheckoutPage.jsx[22m
+[2m20:52:16[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/customer/MyBookingsPage.jsx[22m
+[2m20:59:34[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/gestor/bookings/GestorBookingsPage.jsx, /src/pages/bookings/BookingsPage.jsx, /src/pages/customer/HistoryPage.jsx, /src/pages/customer/MyBookingsPage.jsx[22m
+[2m21:00:49[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/styles/customer.css[22m
+[2m21:09:11[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/fleet/FleetPage.jsx, /src/pages/gestor/fleet/GestorFleetPage.jsx, /src/pages/public/VehicleDetailsPage.jsx, /src/pages/customer/CheckoutPage.jsx, /src/pages/public/VehicleCatalogPage.jsx, /src/pages/gestor/fleet/GestorVehicleDetailDrawer.jsx, /src/pages/gestor/maintenance/GestorMaintenanceFormModal.jsx, /src/pages/gestor/bookings/GestorBookingFormModal.jsx, /src/pages/gestor/fleet/GestorVehicleFormModal.jsx, /src/pages/fleet/VehicleFormModal.jsx, /src/pages/maintenance/MaintenanceFormModal.jsx, /src/pages/fleet/VehicleDetailDrawer.jsx, /src/pages/bookings/BookingFormModal.jsx[22m
+[2m21:09:12[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.jsx[22m
+[2m21:09:55[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/customer/CheckoutPage.jsx[22m
+[2m21:10:13[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/public/VehicleDetailsPage.jsx[22m
+[2m21:10:14[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/public/VehicleCatalogPage.jsx[22m
+[2m21:10:37[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/styles/customer.css[22m
+[2m21:10:51[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/customer/CheckoutPage.jsx[22m

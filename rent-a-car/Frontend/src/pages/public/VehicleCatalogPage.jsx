@@ -1,10 +1,12 @@
 import { Container, Row, Col, Card, Button, Form, Spinner } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useFleet } from '../../hooks/useFleet';
 import Pagination from '../../components/common/Pagination';
 import EmptyState from '../../components/common/EmptyState';
 
 function VehicleCatalogPage() {
+  const { pathname } = useLocation();
+  const fleetBase = pathname.startsWith('/cliente') ? '/cliente/frota' : '/frota';
   const { vehicles, pagination, filters, setFilters, setPagination, isLoading, error, categoryOptions } = useFleet();
 
   const handleFilterChange = (e) => {
@@ -109,9 +111,9 @@ function VehicleCatalogPage() {
                         </div>
                         <div className="mt-auto d-flex justify-content-between align-items-center border-top border-secondary pt-3">
                           <div className="rc-vehicle-price">
-                            €{vehicle.price_per_day}<span>/dia</span>
+                            €{Number(vehicle.pricePerDay).toFixed(2)}<span>/dia</span>
                           </div>
-                          <Button as={Link} to={`/frota/${vehicle.id}`} variant="primary" className="rc-btn-primary px-3 py-2">
+                          <Button as={Link} to={`${fleetBase}/${vehicle.id}`} variant="primary" className="rc-btn-primary px-3 py-2">
                             Ver Detalhes
                           </Button>
                         </div>

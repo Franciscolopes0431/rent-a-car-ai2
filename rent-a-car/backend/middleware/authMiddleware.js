@@ -1,6 +1,14 @@
 const jwt = require('jsonwebtoken');
 
-const SECRET = process.env.JWT_SECRET || 'dev-secret-change-me';
+function getJwtSecret() {
+  const secret = process.env.JWT_SECRET;
+
+  if (!secret || secret.trim() === '') {
+    throw new Error('JWT_SECRET must be configured.');
+  }
+
+  return secret;
+}
 
 function authenticate(req, res, next) {
   const authHeader = req.headers.authorization || '';
@@ -11,7 +19,7 @@ function authenticate(req, res, next) {
   }
 
   try {
-    const payload = jwt.verify(token, SECRET);
+    const payload = jwt.verify(token, getJwtSecret());
     req.user = payload;
     return next();
   } catch (err) {
@@ -29,4 +37,4 @@ function authorize(allowedRoles = []) {
   };
 }
 
-module.exports = { authenticate, authorize };
+module.exports = { authenticate, authorize, getJwtSecret };

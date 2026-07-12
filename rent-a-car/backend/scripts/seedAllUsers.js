@@ -11,7 +11,7 @@ async function run() {
     const usersToCreate = [
       { nome: 'Administrador', email: 'admin@rentcar.pt', password: 'password123', tipo: 'admin' },
       { nome: 'Gestor', email: 'gestor@rentcar.pt', password: 'password123', tipo: 'gestor' },
-      { nome: 'Cliente', email: 'cliente@rentcar.pt', password: 'password123', tipo: 'cliente' }
+      { nome: 'Cliente', email: 'cliente@rentcar.pt', password: 'password123', tipo: 'cliente' },
     ];
 
     for (const userData of usersToCreate) {
@@ -22,7 +22,11 @@ async function run() {
       });
 
       if (!created) {
-        await user.update({ ...userData, password: hashedPassword });
+        await user.update({
+          nome: userData.nome,
+          password: hashedPassword,
+          tipo: userData.tipo,
+        });
         console.log(`User ${userData.email} updated successfully.`);
       } else {
         console.log(`User ${userData.email} created successfully.`);

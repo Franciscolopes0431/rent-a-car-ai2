@@ -12,8 +12,8 @@ const { authenticate } = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
-router.get('/', listBookings);
-router.get('/:id', getBooking);
+router.get('/', authenticate, listBookings);
+router.get('/:id', authenticate, getBooking);
 router.post('/', authenticate, createBooking);
 router.put('/:id', authenticate, updateBooking);
 router.patch('/:id/status', authenticate, changeBookingStatus);

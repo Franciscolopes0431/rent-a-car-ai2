@@ -3,7 +3,7 @@ import { Placeholder, Table } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import BookingStatusBadge from './BookingStatusBadge';
 
-function RecentBookingsTable({ bookings, isLoading }) {
+function RecentBookingsTable({ bookings, isLoading, basePath = '/admin' }) {
   const navigate = useNavigate();
 
   const currencyFormatter = useMemo(
@@ -33,8 +33,8 @@ function RecentBookingsTable({ bookings, isLoading }) {
     return `${dateFormatter.format(new Date(startDate))} – ${dateFormatter.format(new Date(endDate))}`;
   };
 
-  const navigateToBooking = (bookingReference) => {
-    navigate(`/admin/reservas/${bookingReference}`);
+  const navigateToBooking = (bookingId) => {
+    navigate(`${basePath}/reservas/${bookingId}`);
   };
 
   const handleRowKeyDown = (event, bookingReference) => {
@@ -47,7 +47,7 @@ function RecentBookingsTable({ bookings, isLoading }) {
     <section className="rc-card rc-bookings-card">
       <div className="rc-card-header">
         <h2>RESERVAS RECENTES</h2>
-        <button type="button" className="rc-inline-link" onClick={() => navigate('/admin/reservas')}>
+        <button type="button" className="rc-inline-link" onClick={() => navigate(`${basePath}/reservas`)}>
           Ver todas <i className="bi bi-chevron-right" aria-hidden="true" />
         </button>
       </div>
@@ -82,23 +82,23 @@ function RecentBookingsTable({ bookings, isLoading }) {
                 className="rc-clickable-row"
                 role="button"
                 tabIndex={0}
-                onClick={() => navigateToBooking(booking.reference)}
-                onKeyDown={(event) => handleRowKeyDown(event, booking.reference)}
+                onClick={() => navigateToBooking(booking.id)}
+                onKeyDown={(event) => handleRowKeyDown(event, booking.id)}
               >
                 <td>
                   <span className="rc-booking-id">{booking.reference}</span>
                 </td>
                 <td>
-                  {booking.customer?.firstName} {booking.customer?.lastName}
+                  {booking.user?.name || '—'}
                 </td>
                 <td>
-                  <span className="rc-vehicle-name">{booking.vehicle?.model}</span>
+                  <span className="rc-vehicle-name">{booking.vehicle?.brand} {booking.vehicle?.model}</span>
                   <span className="rc-muted-inline"> • {booking.vehicle?.plate}</span>
                 </td>
-                <td className="text-secondary">{formatDateRange(booking.startDate, booking.endDate)}</td>
-                <td className="fw-semibold">{currencyFormatter.format(Number(booking.totalPrice || 0))}</td>
+                <td className="text-secondary">{formatDateRange(booking.data_inicio, booking.data_fim)}</td>
+                <td className="fw-semibold">{currencyFormatter.format(Number(booking.preco_estimado || 0))}</td>
                 <td>
-                  <BookingStatusBadge status={booking.status} />
+                  <BookingStatusBadge status={booking.estado} />
                 </td>
               </tr>
             ))}

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import FleetSummaryTiles from './FleetSummaryTiles';
 import FleetVehicleRow from './FleetVehicleRow';
 
-function FleetStatusPanel({ fleet, isLoading }) {
+function FleetStatusPanel({ fleet, isLoading, basePath = '/admin' }) {
   const navigate = useNavigate();
   const summary = fleet?.summary || { available: 0, reserved: 0, maintenance: 0 };
   const vehicles = fleet?.vehicles || [];
@@ -12,7 +12,7 @@ function FleetStatusPanel({ fleet, isLoading }) {
     <section className="rc-card rc-fleet-card">
       <div className="rc-card-header">
         <h2>ESTADO DA FROTA</h2>
-        <button type="button" className="rc-inline-link" onClick={() => navigate('/admin/frota')}>
+        <button type="button" className="rc-inline-link" onClick={() => navigate(`${basePath}/frota`)}>
           Gerir <i className="bi bi-chevron-right" aria-hidden="true" />
         </button>
       </div>

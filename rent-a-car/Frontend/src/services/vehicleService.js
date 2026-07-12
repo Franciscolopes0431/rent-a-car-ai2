@@ -1,6 +1,7 @@
 import axiosClient from '../api/axiosClient';
 
 export const list = (params) => axiosClient.get('/vehicles', { params });
+export const available = (params) => axiosClient.get('/vehicles/available/search', { params });
 export const getById = (id) => axiosClient.get(`/vehicles/${id}`);
 export const create = (payload) => axiosClient.post('/vehicles', payload);
 export const update = (id, payload) => axiosClient.put(`/vehicles/${id}`, payload);

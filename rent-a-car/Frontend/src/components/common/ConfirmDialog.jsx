@@ -1,6 +1,6 @@
 import { Button, Modal } from 'react-bootstrap';
 
-function ConfirmDialog({ show, title, message, onCancel, onConfirm, confirmLabel = 'Confirmar' }) {
+function ConfirmDialog({ show, title, message, onCancel, onConfirm, confirmLabel = 'Confirmar', isConfirming = false }) {
   return (
     <Modal show={show} onHide={onCancel} backdrop="static" centered>
       <Modal.Header closeButton>
@@ -10,11 +10,11 @@ function ConfirmDialog({ show, title, message, onCancel, onConfirm, confirmLabel
         <p className="mb-0">{message}</p>
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="secondary" onClick={onCancel}>
+        <Button variant="secondary" onClick={onCancel} disabled={isConfirming}>
           Cancelar
         </Button>
-        <Button variant="warning" onClick={onConfirm}>
-          {confirmLabel}
+        <Button variant="warning" onClick={onConfirm} disabled={isConfirming}>
+          {isConfirming ? 'A processar...' : confirmLabel}
         </Button>
       </Modal.Footer>
     </Modal>

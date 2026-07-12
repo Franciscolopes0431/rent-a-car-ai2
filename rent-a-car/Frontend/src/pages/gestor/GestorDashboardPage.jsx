@@ -86,10 +86,10 @@ function GestorDashboardPage() {
 
       <Row className="g-3 mb-4">
         <Col xl={8}>
-          <RecentBookingsTable bookings={recentBookings} isLoading={isLoading} />
+          <RecentBookingsTable bookings={recentBookings} isLoading={isLoading} basePath="/gestor" />
         </Col>
         <Col xl={4}>
-          <FleetStatusPanel fleet={fleet} isLoading={isLoading} />
+          <FleetStatusPanel fleet={fleet} isLoading={isLoading} basePath="/gestor" />
         </Col>
       </Row>
 
@@ -98,7 +98,7 @@ function GestorDashboardPage() {
           <AlertsPanel alerts={alerts} isLoading={isLoading} />
         </Col>
         <Col xl={5}>
-          <QuickAccessPanel isLoading={isLoading} />
+          <QuickAccessPanel isLoading={isLoading} basePath="/gestor" />
         </Col>
       </Row>
 

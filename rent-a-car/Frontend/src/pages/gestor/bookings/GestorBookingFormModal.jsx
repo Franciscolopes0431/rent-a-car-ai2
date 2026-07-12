@@ -1,18 +1,19 @@
 ﻿import { useEffect, useMemo, useState } from 'react';
 import { Button, Form, Modal, Row, Col, Spinner } from 'react-bootstrap';
 import * as bookingService from '../../../services/bookingService';
-import * as customerService from '../../../services/customerService';
 import * as vehicleService from '../../../services/vehicleService';
-import GestorCustomerFormModal from '../customers/GestorCustomerFormModal';
 
-const STATUS_OPTIONS = ['Pendente', 'Confirmada', 'Em curso', 'Concluída', 'Cancelada'];
+const STATUS_OPTIONS = [
+  { value: 'pendente', label: 'Pendente' },
+  { value: 'confirmada', label: 'Confirmada' },
+  { value: 'cancelada', label: 'Cancelada' },
+];
 
 function GestorBookingFormModal({ show, booking, onHide, onSaved }) {
-  const [formData, setFormData] = useState({ customerId: '', vehicleId: '', startDate: '', endDate: '', status: 'Pendente' });
+  const [formData, setFormData] = useState({ customerId: '', vehicleId: '', startDate: '', endDate: '', status: 'pendente' });
   const [errors, setErrors] = useState({});
   const [customers, setCustomers] = useState([]);
   const [vehicles, setVehicles] = useState([]);
-  const [showCustomerForm, setShowCustomerForm] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoadingResources, setIsLoadingResources] = useState(false);
 
@@ -23,10 +24,10 @@ function GestorBookingFormModal({ show, booking, onHide, onSaved }) {
         vehicleId: booking.vehicle?.id || '',
         startDate: booking.startDate || '',
         endDate: booking.endDate || '',
-        status: booking.status || 'Pendente',
+        status: booking.estado || booking.status || 'pendente',
       });
     } else {
-      setFormData({ customerId: '', vehicleId: '', startDate: '', endDate: '', status: 'Pendente' });
+      setFormData({ customerId: '', vehicleId: '', startDate: '', endDate: '', status: 'pendente' });
     }
     setErrors({});
   }, [booking, show]);
@@ -36,10 +37,10 @@ function GestorBookingFormModal({ show, booking, onHide, onSaved }) {
       setIsLoadingResources(true);
       try {
         const [customerResponse, vehicleResponse] = await Promise.all([
-          customerService.list({ pageSize: 100 }),
+          bookingService.listCustomers(),
           vehicleService.list({ status: 'Disponível', pageSize: 100 }),
         ]);
-        setCustomers(customerResponse.data.data);
+        setCustomers(customerResponse.data);
         setVehicles(vehicleResponse.data.data);
       } finally {
         setIsLoadingResources(false);
@@ -57,7 +58,7 @@ function GestorBookingFormModal({ show, booking, onHide, onSaved }) {
     if (!formData.vehicleId) payloadErrors.vehicleId = 'O veículo é obrigatório.';
     if (!formData.startDate) payloadErrors.startDate = 'A data de início é obrigatória.';
     if (!formData.endDate) payloadErrors.endDate = 'A data de fim é obrigatória.';
-    if (formData.startDate && formData.endDate && new Date(formData.startDate) > new Date(formData.endDate)) payloadErrors.endDate = 'A data de fim deve ser posterior à data de início.';
+    if (formData.startDate && formData.endDate && formData.startDate >= formData.endDate) payloadErrors.endDate = 'A data de fim deve ser posterior à data de início.';
     setErrors(payloadErrors);
     return Object.keys(payloadErrors).length === 0;
   };
@@ -69,11 +70,11 @@ function GestorBookingFormModal({ show, booking, onHide, onSaved }) {
     setIsSaving(true);
     try {
       const payload = {
-        customerId: formData.customerId,
+        userId: formData.customerId,
         vehicleId: formData.vehicleId,
-        startDate: formData.startDate,
-        endDate: formData.endDate,
-        status: formData.status,
+        data_inicio: formData.startDate,
+        data_fim: formData.endDate,
+        estado: formData.status,
       };
       if (booking) {
         await bookingService.update(booking.id, payload);
@@ -86,12 +87,6 @@ function GestorBookingFormModal({ show, booking, onHide, onSaved }) {
     } finally {
       setIsSaving(false);
     }
-  };
-
-  const handleNewCustomerSaved = async () => {
-    setShowCustomerForm(false);
-    const response = await customerService.list({ pageSize: 100 });
-    setCustomers(response.data.data);
   };
 
   const availableVehicles = useMemo(() => vehicles, [vehicles]);
@@ -109,7 +104,6 @@ function GestorBookingFormModal({ show, booking, onHide, onSaved }) {
               <Col md={6}>
                 <Form.Group controlId="gestor-customerId">
                   <Form.Label>Cliente</Form.Label>
-                  <div className="d-flex gap-2 align-items-center">
                     <Form.Select
                       value={formData.customerId}
                       onChange={(event) => setFormData({ ...formData, customerId: event.target.value })}
@@ -117,11 +111,9 @@ function GestorBookingFormModal({ show, booking, onHide, onSaved }) {
                     >
                       <option value="">Selecione um cliente</option>
                       {customers.map((customer) => (
-                        <option key={customer.id} value={customer.id}>{`${customer.firstName} ${customer.lastName}`}</option>
+                        <option key={customer.id} value={customer.id}>{customer.name} — {customer.email}</option>
                       ))}
                     </Form.Select>
-                    <Button variant="outline-warning" size="sm" type="button" onClick={() => setShowCustomerForm(true)}>+ Novo cliente</Button>
-                  </div>
                   <Form.Control.Feedback type="invalid">{errors.customerId}</Form.Control.Feedback>
                 </Form.Group>
               </Col>
@@ -146,6 +138,7 @@ function GestorBookingFormModal({ show, booking, onHide, onSaved }) {
                   <Form.Label>De</Form.Label>
                   <Form.Control
                     type="date"
+                    min={new Date().toISOString().slice(0, 10)}
                     value={formData.startDate}
                     onChange={(event) => setFormData({ ...formData, startDate: event.target.value })}
                     isInvalid={!!errors.startDate}
@@ -158,6 +151,7 @@ function GestorBookingFormModal({ show, booking, onHide, onSaved }) {
                   <Form.Label>Até</Form.Label>
                   <Form.Control
                     type="date"
+                    min={formData.startDate || new Date().toISOString().slice(0, 10)}
                     value={formData.endDate}
                     onChange={(event) => setFormData({ ...formData, endDate: event.target.value })}
                     isInvalid={!!errors.endDate}
@@ -170,7 +164,7 @@ function GestorBookingFormModal({ show, booking, onHide, onSaved }) {
                   <Form.Label>Estado</Form.Label>
                   <Form.Select value={formData.status} onChange={(event) => setFormData({ ...formData, status: event.target.value })}>
                     {STATUS_OPTIONS.map((option) => (
-                      <option key={option} value={option}>{option}</option>
+                      <option key={option.value} value={option.value}>{option.label}</option>
                     ))}
                   </Form.Select>
                 </Form.Group>
@@ -188,12 +182,6 @@ function GestorBookingFormModal({ show, booking, onHide, onSaved }) {
           </Modal.Footer>
         </Form>
       </Modal>
-
-      <GestorCustomerFormModal
-        show={showCustomerForm}
-        onHide={() => setShowCustomerForm(false)}
-        onSaved={handleNewCustomerSaved}
-      />
     </>
   );
 }

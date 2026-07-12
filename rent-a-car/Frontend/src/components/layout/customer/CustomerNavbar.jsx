@@ -25,18 +25,23 @@ function CustomerNavbar() {
             <Nav.Link as={NavLink} to="/frota">Frota</Nav.Link>
             <Nav.Link as={NavLink} to="/sobre">Sobre Nós</Nav.Link>
             <Nav.Link as={NavLink} to="/contactos">Contactos</Nav.Link>
+            {isAuthenticated && user?.role === 'cliente' ? <Nav.Link as={NavLink} to="/minhas-reservas">Reservas</Nav.Link> : null}
           </Nav>
           <Nav>
             {isAuthenticated ? (
               <NavDropdown title={<span><i className="bi bi-person-circle me-2"></i>{user?.name}</span>} id="customer-nav-dropdown" align="end">
                 {user?.role === 'admin' || user?.role === 'gestor' ? (
                   <>
-                    <NavDropdown.Item as={Link} to="/admin">Dashboard {user.role}</NavDropdown.Item>
+                    <NavDropdown.Item as={Link} to={`/${user.role}`}>Painel de {user.role === 'admin' ? 'administração' : 'gestão'}</NavDropdown.Item>
                     <NavDropdown.Divider />
                   </>
                 ) : null}
                 <NavDropdown.Item as={Link} to="/minha-conta">A Minha Conta</NavDropdown.Item>
                 <NavDropdown.Item as={Link} to="/minhas-reservas">As Minhas Reservas</NavDropdown.Item>
+                <NavDropdown.Item as={Link} to="/historico">Histórico</NavDropdown.Item>
+                <NavDropdown.Item as={Link} to="/metodos-pagamento">Métodos de Pagamento</NavDropdown.Item>
+                <NavDropdown.Item as={Link} to="/avaliacoes">Avaliações</NavDropdown.Item>
+                <NavDropdown.Item as={Link} to="/suporte">Apoio ao Cliente</NavDropdown.Item>
                 <NavDropdown.Divider />
                 <NavDropdown.Item onClick={handleLogout} className="text-danger">Sair</NavDropdown.Item>
               </NavDropdown>

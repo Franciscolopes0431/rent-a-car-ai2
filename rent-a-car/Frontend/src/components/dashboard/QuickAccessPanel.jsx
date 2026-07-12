@@ -1,21 +1,16 @@
-import { useState } from 'react';
-import { Modal, Placeholder, Row, Col } from 'react-bootstrap';
+import { Placeholder, Row, Col } from 'react-bootstrap';
+import { Link } from 'react-router-dom';
 
-const DEFAULT_ACCOUNTS = [
-  { id: 'manager', label: 'Gestor', description: 'Conta operacional', icon: 'bi-person-circle' },
-  { id: 'client', label: 'Cliente', description: 'Conta de cliente', icon: 'bi-person-circle' },
+const DEFAULT_ACTIONS = [
+  { id: 'customers', label: 'Clientes', description: 'Consultar e gerir clientes', icon: 'bi-people', path: 'clientes' },
+  { id: 'bookings', label: 'Reservas', description: 'Consultar e gerir reservas', icon: 'bi-calendar-check', path: 'reservas' },
 ];
 
-function QuickAccessPanel({ accounts = DEFAULT_ACCOUNTS, isLoading }) {
-  const [selectedAccount, setSelectedAccount] = useState(null);
-
+function QuickAccessPanel({ actions = DEFAULT_ACTIONS, isLoading, basePath = '/admin' }) {
   return (
     <section className="rc-card rc-quick-card">
       <div className="rc-card-header">
-        <h2>ACESSO RÁPIDO A CONTAS</h2>
-        <button type="button" className="rc-inline-link">
-          Dar contas <i className="bi bi-chevron-right" aria-hidden="true" />
-        </button>
+        <h2>ACESSO RÁPIDO</h2>
       </div>
 
       {isLoading ? (
@@ -25,41 +20,23 @@ function QuickAccessPanel({ accounts = DEFAULT_ACCOUNTS, isLoading }) {
         </Placeholder>
       ) : (
         <Row className="g-2">
-          {accounts.map((account) => (
-            <Col key={account.id} sm={6}>
-              <button
-                type="button"
+          {actions.map((action) => (
+            <Col key={action.id} sm={6}>
+              <Link
+                to={`${basePath}/${action.path}`}
                 className="rc-account-tile"
-                onClick={() => setSelectedAccount(account)}
               >
-                <i className={`bi ${account.icon}`} aria-hidden="true" />
+                <i className={`bi ${action.icon}`} aria-hidden="true" />
                 <span>
-                  <strong>{account.label}</strong>
-                  <small>{account.description}</small>
+                  <strong>{action.label}</strong>
+                  <small>{action.description}</small>
                 </span>
-              </button>
+              </Link>
             </Col>
           ))}
         </Row>
       )}
 
-      <Modal
-        centered
-        show={Boolean(selectedAccount)}
-        onHide={() => setSelectedAccount(null)}
-        contentClassName="rc-support-modal"
-      >
-        <Modal.Header closeButton closeVariant="white">
-          <Modal.Title>Gestão de conta</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          {selectedAccount ? (
-            <p className="mb-0">
-              Fluxo de criação/atribuição para <strong>{selectedAccount.label}</strong> em construção.
-            </p>
-          ) : null}
-        </Modal.Body>
-      </Modal>
     </section>
   );
 }

@@ -1,21 +1,25 @@
-import { Container, Row, Col, Button, Form, Card, Alert } from 'react-bootstrap';
+import { Container, Row, Col, Button, Form, Alert } from 'react-bootstrap';
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import * as vehicleService from '../../services/vehicleService';
+import * as bookingService from '../../services/bookingService';
+import { useAuth } from '../../hooks/useAuth';
 
 function CheckoutPage() {
   const [searchParams] = useSearchParams();
   const vehicleId = searchParams.get('vehicleId');
   const navigate = useNavigate();
+  const { user } = useAuth();
 
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(searchParams.get('pickup') && searchParams.get('return') ? 2 : 1);
   const [vehicle, setVehicle] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
 
   const [dates, setDates] = useState({
-    pickup: '',
-    return: '',
-    location: 'Lisboa - Aeroporto'
+    pickup: searchParams.get('pickup') || '',
+    return: searchParams.get('return') || '',
+    location: searchParams.get('location') || 'Lisboa - Aeroporto'
   });
 
   const [extras, setExtras] = useState({
@@ -25,22 +29,31 @@ function CheckoutPage() {
   });
 
   const [payment, setPayment] = useState({
-    method: 'Credit Card',
+    method: 'Pagamento de teste',
     acceptTerms: false
   });
+  const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const today = new Date().toISOString().slice(0, 10);
 
   useEffect(() => {
     if (!vehicleId) {
-      navigate('/frota');
+      navigate('/cliente/reserva');
       return;
     }
 
     const fetchVehicle = async () => {
       try {
+        setLoadError('');
         const response = await vehicleService.getById(vehicleId);
-        setVehicle(response.data);
+        const vehicleData = response?.data?.data || response?.data;
+        setVehicle(vehicleData || null);
+        if (!vehicleData) {
+          setLoadError('Não foi possível encontrar este veículo.');
+        }
       } catch (err) {
-        console.error("Error fetching vehicle:", err);
+        console.error('Error fetching vehicle:', err);
+        setLoadError(err.response?.data?.message || 'Não foi possível carregar o veículo selecionado.');
       } finally {
         setIsLoading(false);
       }
@@ -49,10 +62,18 @@ function CheckoutPage() {
     fetchVehicle();
   }, [vehicleId, navigate]);
 
-  if (isLoading || !vehicle) {
+  if (isLoading) {
     return (
       <Container className="py-5 text-center">
         <p className="text-secondary">A preparar a sua reserva...</p>
+      </Container>
+    );
+  }
+
+  if (!vehicle) {
+    return (
+      <Container className="py-5">
+        <Alert variant="danger">{loadError || 'Não foi possível carregar o veículo selecionado.'}</Alert>
       </Container>
     );
   }
@@ -61,26 +82,74 @@ function CheckoutPage() {
     ? Math.max(1, Math.ceil((new Date(dates.return) - new Date(dates.pickup)) / (1000 * 60 * 60 * 24))) 
     : 1;
 
-  const basePrice = vehicle.price_per_day * days;
+  const basePrice = Number(vehicle.pricePerDay) * days;
   const extrasPrice = (extras.gps ? 10 * days : 0) + (extras.childSeat * 5 * days) + (extras.insurance ? 25 * days : 0);
   const totalPrice = basePrice + extrasPrice;
 
-  const handleNext = () => setStep(s => s + 1);
+  const handleNext = () => {
+    if (step === 1) {
+      if (!dates.pickup || !dates.return) {
+        setError('Selecione as datas de levantamento e devolução para continuar.');
+        return;
+      }
+
+      if (dates.pickup < today || dates.return <= dates.pickup) {
+        setError('Escolha um levantamento a partir de hoje e uma devolução posterior.');
+        return;
+      }
+    }
+
+    setError('');
+    setStep((current) => current + 1);
+  };
   const handlePrev = () => setStep(s => s - 1);
 
-  const handleConfirm = () => {
-    if (!payment.acceptTerms) {
-      alert('Tem de aceitar os termos e condições para prosseguir.');
+  const handleConfirm = async () => {
+    if (!dates.pickup || !dates.return) {
+      setError('Selecione as datas de levantamento e devolução para continuar.');
       return;
     }
-    // Simulate booking creation
-    alert('Reserva concluída com sucesso!');
-    navigate('/minhas-reservas');
+
+    if (new Date(dates.return) <= new Date(dates.pickup)) {
+      setError('A data de devolução tem de ser posterior à data de levantamento.');
+      return;
+    }
+
+    if (!payment.acceptTerms) {
+      setError('Tem de aceitar os termos e condições para prosseguir.');
+      return;
+    }
+
+    if (!user?.id) {
+      setError('É necessário iniciar sessão para concluir a reserva.');
+      return;
+    }
+
+    setError('');
+    setIsSubmitting(true);
+
+    try {
+      const payload = {
+        userId: user.id,
+        vehicleId: Number(vehicleId),
+        data_inicio: dates.pickup,
+        data_fim: dates.return,
+        extras,
+      };
+
+      const response = await bookingService.create(payload);
+      const reservationId = response?.data?.id || response?.id;
+      navigate(`/minhas-reservas?reservation=${reservationId}`);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Não foi possível criar a reserva.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <Container className="py-4">
-      <h1 className="h3 mb-4 text-white">Finalizar Reserva</h1>
+    <Container className="py-4 rc-customer-page">
+      <div className="rc-customer-page-header"><div><span className="rc-eyebrow">Reserva segura</span><h1>Finalizar Reserva</h1><p>Revise cada etapa antes de confirmar.</p></div></div>
 
       <div className="d-flex justify-content-between mb-5 position-relative rc-stepper">
         <div className={`text-center ${step >= 1 ? 'text-primary' : 'text-secondary'}`} style={{ zIndex: 1, backgroundColor: 'var(--rc-bg-dark)', padding: '0 10px' }}>
@@ -129,7 +198,8 @@ function CheckoutPage() {
                       <Form.Control 
                         type="date"
                         value={dates.pickup}
-                        onChange={(e) => setDates({ ...dates, pickup: e.target.value })}
+                        min={today}
+                        onChange={(e) => setDates({ ...dates, pickup: e.target.value, return: dates.return && dates.return <= e.target.value ? '' : dates.return })}
                         className="bg-dark text-white border-secondary"
                       />
                     </Form.Group>
@@ -140,12 +210,14 @@ function CheckoutPage() {
                       <Form.Control 
                         type="date"
                         value={dates.return}
+                        min={dates.pickup || today}
                         onChange={(e) => setDates({ ...dates, return: e.target.value })}
                         className="bg-dark text-white border-secondary"
                       />
                     </Form.Group>
                   </Col>
                 </Row>
+                {error ? <Alert variant="danger" className="mb-3">{error}</Alert> : null}
                 <div className="d-flex justify-content-end mt-4">
                   <Button variant="primary" onClick={handleNext} disabled={!dates.pickup || !dates.return} className="rc-btn-primary px-4">
                     Continuar para Extras
@@ -210,7 +282,8 @@ function CheckoutPage() {
 
           {step === 3 && (
             <div className="rc-card mb-4">
-              <h4 className="h5 text-white mb-4">Método de Pagamento</h4>
+              <h4 className="h5 text-white mb-2">Confirmação</h4>
+              <Alert variant="info" className="small mb-4"><i className="bi bi-info-circle me-2" />O pagamento é fictício. Não será efetuada qualquer cobrança.</Alert>
               
               <Form.Group className="mb-4">
                 <Form.Label className="text-secondary">Selecione o método</Form.Label>
@@ -219,28 +292,13 @@ function CheckoutPage() {
                   onChange={(e) => setPayment({ ...payment, method: e.target.value })}
                   className="bg-dark text-white border-secondary mb-3"
                 >
-                  <option value="Credit Card">Cartão de Crédito/Débito</option>
-                  <option value="MB Way">MB Way</option>
-                  <option value="Paypal">PayPal</option>
+                  <option value="Pagamento de teste">Pagamento de teste</option>
                 </Form.Select>
               </Form.Group>
 
-              {payment.method === 'Credit Card' && (
-                <div className="p-3 border border-secondary rounded mb-4">
-                  <p className="text-secondary small mb-3"><i className="bi bi-shield-lock me-2"></i>Pagamento Seguro</p>
-                  <Form.Group className="mb-3">
-                    <Form.Control placeholder="Número do Cartão" className="bg-dark text-white border-secondary" />
-                  </Form.Group>
-                  <Row>
-                    <Col xs={6}>
-                      <Form.Control placeholder="MM/AA" className="bg-dark text-white border-secondary" />
-                    </Col>
-                    <Col xs={6}>
-                      <Form.Control placeholder="CVC" className="bg-dark text-white border-secondary" />
-                    </Col>
-                  </Row>
-                </div>
-              )}
+              {error ? (
+                <Alert variant="danger" className="mb-3">{error}</Alert>
+              ) : null}
 
               <Form.Group className="mb-4">
                 <Form.Check 
@@ -257,8 +315,8 @@ function CheckoutPage() {
                 <Button variant="outline-light" onClick={handlePrev}>
                   Voltar
                 </Button>
-                <Button variant="primary" onClick={handleConfirm} className="rc-btn-primary px-4" disabled={!payment.acceptTerms}>
-                  Confirmar e Pagar
+                <Button variant="primary" onClick={handleConfirm} className="rc-btn-primary px-4" disabled={!payment.acceptTerms || isSubmitting}>
+                  {isSubmitting ? 'A confirmar...' : 'Confirmar Reserva'}
                 </Button>
               </div>
             </div>
@@ -286,7 +344,7 @@ function CheckoutPage() {
 
             <div className="border-top border-secondary pt-3 mt-3">
               <div className="d-flex justify-content-between text-secondary mb-2">
-                <span>Diárias ({days}x €{vehicle.price_per_day})</span>
+                <span>Diárias ({days}x €{Number(vehicle.pricePerDay).toFixed(2)})</span>
                 <span>€{basePrice.toFixed(2)}</span>
               </div>
               
@@ -310,7 +368,7 @@ function CheckoutPage() {
               )}
 
               <div className="d-flex justify-content-between text-white fw-bold fs-5 border-top border-secondary pt-3 mt-3">
-                <span>Total a Pagar</span>
+                <span>Total estimado</span>
                 <span className="text-warning">€{totalPrice.toFixed(2)}</span>
               </div>
             </div>

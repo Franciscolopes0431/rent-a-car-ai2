@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import * as bookingService from '../services/bookingService';
 
-export function useBookings() {
+export function useBookings(initialFilters = {}, initialPageSize = 10) {
   const [bookings, setBookings] = useState([]);
-  const [pagination, setPagination] = useState({ page: 1, pageSize: 10, total: 0, totalPages: 0 });
-  const [filters, setFilters] = useState({ status: '', search: '', from: '', to: '' });
+  const [pagination, setPagination] = useState({ page: 1, pageSize: initialPageSize, total: 0, totalPages: 0 });
+  const [summary, setSummary] = useState({ total: 0, pendente: 0, confirmada: 0, cancelada: 0 });
+  const [filters, setFilters] = useState({ status: '', search: '', from: '', to: '', ...initialFilters });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -14,8 +15,10 @@ export function useBookings() {
       setError(null);
       const params = { ...filters, page: pagination.page, pageSize: pagination.pageSize, ...overrides };
       const response = await bookingService.list(params);
-      setBookings(response.data.data);
-      setPagination(response.data.pagination);
+      const reservations = Array.isArray(response?.data?.data) ? response.data.data : [];
+      setBookings(reservations);
+      setPagination(response?.data?.pagination || { page: 1, pageSize: 10, total: reservations.length, totalPages: 1 });
+      setSummary(response?.data?.summary || { total: reservations.length, pendente: 0, confirmada: 0, cancelada: 0 });
     } catch (err) {
       setError(err.response?.data?.message || 'Erro ao carregar reservas');
     } finally {
@@ -30,17 +33,16 @@ export function useBookings() {
   const statusOptions = useMemo(
     () => [
       { label: 'Todas', value: '' },
-      { label: 'Pendente', value: 'Pendente' },
-      { label: 'Confirmada', value: 'Confirmada' },
-      { label: 'Em curso', value: 'Em curso' },
-      { label: 'Concluída', value: 'Concluída' },
-      { label: 'Cancelada', value: 'Cancelada' },
+      { label: 'Pendente', value: 'pendente' },
+      { label: 'Confirmada', value: 'confirmada' },
+      { label: 'Cancelada', value: 'cancelada' },
     ],
     []
   );
 
   return {
     bookings,
+    summary,
     pagination,
     filters,
     setFilters,

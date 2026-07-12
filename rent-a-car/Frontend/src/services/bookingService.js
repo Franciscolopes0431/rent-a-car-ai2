@@ -1,8 +1,10 @@
 import axiosClient from '../api/axiosClient';
 
-export const list = (params) => axiosClient.get('/bookings', { params });
-export const getById = (id) => axiosClient.get(`/bookings/${id}`);
-export const create = (payload) => axiosClient.post('/bookings', payload);
-export const update = (id, payload) => axiosClient.put(`/bookings/${id}`, payload);
-export const changeStatus = (id, status) => axiosClient.patch(`/bookings/${id}/status`, { status });
-export const cancel = (id) => axiosClient.delete(`/bookings/${id}`);
+export const list = (params) => axiosClient.get('/reservations', { params });
+export const listCustomers = () => axiosClient.get('/reservations/customers/options');
+export const createCustomer = (payload) => axiosClient.post('/reservations/customers', payload);
+export const getById = (id) => axiosClient.get(`/reservations/${id}`);
+export const create = (payload) => axiosClient.post('/reservations', payload);
+export const update = (id, payload) => axiosClient.put(`/reservations/${id}`, payload);
+export const changeStatus = (id, status) => axiosClient.patch(`/reservations/${id}/status`, { estado: status });
+export const cancel = (id) => axiosClient.patch(`/reservations/${id}/cancel`);

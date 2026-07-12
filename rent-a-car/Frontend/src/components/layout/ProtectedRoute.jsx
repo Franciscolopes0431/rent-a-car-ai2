@@ -15,7 +15,14 @@ function ProtectedRoute({ role }) {
   if (role) {
     const allowedRoles = Array.isArray(role) ? role : [role];
     if (!user || !allowedRoles.includes(user.role)) {
-      return <Navigate to="/login" replace />;
+      const destination = user?.role === 'admin'
+        ? '/admin'
+        : user?.role === 'gestor'
+          ? '/gestor'
+          : user?.role === 'cliente'
+            ? '/cliente'
+            : '/';
+      return <Navigate to={destination} replace />;
     }
   }
 

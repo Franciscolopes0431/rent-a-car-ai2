@@ -238,6 +238,123 @@
   padding: 1.25rem 1.5rem;
 }
 
+.rc-reservations-page .rc-page-header {
+  padding: 1.5rem 1.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  background: linear-gradient(135deg, #242428 0%, #202023 100%);
+}
+
+.rc-reservations-page .rc-page-title {
+  font-size: clamp(1.5rem, 2vw, 2rem);
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+
+.rc-booking-summary-card {
+  width: 100%;
+  min-height: 108px;
+  border: 1px solid var(--rc-card-border);
+  border-radius: 12px;
+  padding: 1rem 1.2rem;
+  background: var(--rc-card-bg);
+  color: var(--rc-text-primary);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  text-align: left;
+  transition: border-color 0.2s ease, transform 0.2s ease, background-color 0.2s ease;
+}
+
+.rc-booking-summary-card:hover,
+.rc-booking-summary-card:focus-visible,
+.rc-booking-summary-card.is-active {
+  border-color: rgba(245, 184, 28, 0.65);
+  background: linear-gradient(145deg, rgba(245, 184, 28, 0.1), var(--rc-card-bg) 65%);
+  transform: translateY(-2px);
+}
+
+.rc-booking-summary-card span {
+  color: var(--rc-text-secondary);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.rc-booking-summary-card span .bi {
+  color: var(--rc-yellow);
+  margin-right: 0.35rem;
+}
+
+.rc-booking-summary-card strong {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.rc-booking-filters {
+  padding: 1.25rem 1.5rem;
+}
+
+.rc-reservations-page .form-control,
+.rc-reservations-page .form-select {
+  min-height: 44px;
+}
+
+.rc-reservations-page .rc-table.rc-card {
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  background: transparent;
+}
+
+.rc-reservations-page .rc-table thead th {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--rc-border);
+  white-space: nowrap;
+}
+
+.rc-reservations-page .rc-table tbody td {
+  padding: 1rem;
+  vertical-align: middle;
+  border-color: var(--rc-border);
+}
+
+.rc-table-action.btn-link {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  padding: 0;
+  display: inline-grid;
+  place-items: center;
+  color: var(--rc-text-secondary);
+  text-decoration: none;
+}
+
+.rc-table-action.btn-link:hover,
+.rc-table-action.btn-link:focus-visible {
+  color: var(--rc-yellow);
+  background: var(--rc-warning-bg);
+}
+
+.rc-table-action.btn-link.is-danger:hover,
+.rc-table-action.btn-link.is-danger:focus-visible {
+  color: var(--rc-danger-text);
+  background: var(--rc-danger-bg);
+}
+
+.rc-reservations-page .rc-pagination {
+  padding: 0.8rem 1rem !important;
+}
+
+.rc-reservations-page .rc-empty-state {
+  min-height: 300px;
+  display: grid;
+  place-content: center;
+  margin-top: 0;
+}
+
 .rc-card-header {
   display: flex;
   align-items: center;
@@ -565,5 +682,21 @@
   .rc-btn-primary-action.btn {
     flex: 1;
     justify-content: center;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .rc-reservations-page .rc-page-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .rc-reservations-page .rc-page-header-actions .btn {
+    width: 100%;
+  }
+
+  .rc-booking-filters > .d-flex {
+    align-items: flex-start !important;
+    flex-direction: column;
   }
 }

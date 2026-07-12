@@ -4,8 +4,8 @@ function PageHeader({ title, subtitle, actions = [] }) {
   return (
     <div className="rc-page-header rc-card mb-4">
       <div>
-        <p className="text-muted text-uppercase mb-1">{subtitle}</p>
-        <h2 className="rc-page-title mb-0">{title}</h2>
+        <h2 className="rc-page-title mb-1">{title}</h2>
+        <p className="text-muted mb-0">{subtitle}</p>
       </div>
       <div className="rc-page-header-actions d-flex flex-wrap gap-2">
         {actions.map((action) => (

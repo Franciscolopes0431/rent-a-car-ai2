@@ -67,7 +67,7 @@ function GestorBookingsPage() {
         render: (booking) => {
           const start = new Date(booking.startDate);
           const end = new Date(booking.endDate);
-          return Math.max(1, Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1);
+          return Math.max(1, Math.ceil((end - start) / (1000 * 60 * 60 * 24)));
         },
       },
       {
@@ -104,7 +104,7 @@ function GestorBookingsPage() {
     <div>
       <PageHeader
         title="RESERVAS"
-        subtitle={`${pagination.total || bookings.length} reservas · ${bookings.filter((booking) => ['Confirmada', 'Em curso'].includes(booking.status)).length} ativas`}
+        subtitle={`${pagination.total || bookings.length} reservas · ${bookings.filter((booking) => (booking.estado || booking.status) === 'confirmada').length} ativas`}
         actions={actions}
       />
 

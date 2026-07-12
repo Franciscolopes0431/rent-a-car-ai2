@@ -1,39 +1,38 @@
 import { Container, Row, Col, Card, Form, Button, Accordion } from 'react-bootstrap';
 import { useState } from 'react';
+import { useBookings } from '../../hooks/useBookings';
 
 function SupportPage() {
+  const { bookings } = useBookings();
   const [formData, setFormData] = useState({
     subject: '',
     bookingId: '',
     message: ''
   });
 
-  const [messageSent, setMessageSent] = useState(false);
+  const [ticketReference, setTicketReference] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    setMessageSent(true);
+    const ticket = { id: `SUP-${Date.now().toString().slice(-6)}`, ...formData, createdAt: new Date().toISOString(), status: 'recebido' };
+    const existing = JSON.parse(localStorage.getItem('rentcarSupportTickets') || '[]');
+    localStorage.setItem('rentcarSupportTickets', JSON.stringify([ticket, ...existing]));
+    setTicketReference(ticket.id);
     setFormData({ subject: '', bookingId: '', message: '' });
-    setTimeout(() => setMessageSent(false), 5000);
   };
 
   return (
-    <Container className="py-4">
-      <Row className="mb-4">
-        <Col>
-          <h1 className="h3 mb-2 text-white">Apoio ao Cliente</h1>
-          <p className="text-secondary">Como podemos ajudar? Consulte as FAQs ou envie-nos uma mensagem.</p>
-        </Col>
-      </Row>
+    <Container className="py-4 rc-customer-page">
+      <div className="rc-customer-page-header"><div><span className="rc-eyebrow">Estamos aqui para ajudar</span><h1>Apoio ao Cliente</h1><p>Consulte as perguntas frequentes ou registe um pedido de apoio.</p></div></div>
 
       <Row className="g-4">
         <Col lg={7}>
           <div className="rc-card mb-4">
             <h4 className="h5 text-white border-bottom border-secondary pb-3 mb-4">Enviar Mensagem</h4>
             
-            {messageSent && (
+            {ticketReference && (
               <div className="alert alert-success">
-                A sua mensagem foi enviada com sucesso! Iremos responder o mais breve possível.
+                Pedido registado com a referência <strong>{ticketReference}</strong>. Guarde-a para acompanhamento.
               </div>
             )}
 
@@ -66,8 +65,11 @@ function SupportPage() {
                       className="bg-dark text-white border-secondary"
                     >
                       <option value="">Nenhuma</option>
-                      <option value="1234">Reserva #1234 (BMW Serie 1)</option>
-                      <option value="1235">Reserva #1235 (Renault Clio)</option>
+                      {bookings.map((booking) => (
+                        <option key={booking.id} value={booking.id}>
+                          {booking.reference || `Reserva #${booking.id}`} — {booking.vehicle?.brand} {booking.vehicle?.model}
+                        </option>
+                      ))}
                     </Form.Select>
                   </Form.Group>
                 </Col>

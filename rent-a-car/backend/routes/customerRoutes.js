@@ -6,13 +6,14 @@ const {
   updateCustomer,
   deleteCustomer,
 } = require('../controllers/customerController');
+const { authenticate, authorize } = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
-router.get('/', listCustomers);
-router.get('/:id', getCustomer);
-router.post('/', createCustomer);
-router.put('/:id', updateCustomer);
-router.delete('/:id', deleteCustomer);
+router.get('/', authenticate, authorize(['admin', 'gestor']), listCustomers);
+router.get('/:id', authenticate, authorize(['admin', 'gestor']), getCustomer);
+router.post('/', authenticate, authorize(['admin', 'gestor']), createCustomer);
+router.put('/:id', authenticate, authorize(['admin', 'gestor']), updateCustomer);
+router.delete('/:id', authenticate, authorize(['admin', 'gestor']), deleteCustomer);
 
 module.exports = router;

@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { dashboardMock } from '../api/mockFallback';
 import * as bookingService from '../services/bookingService';
 import * as dashboardService from '../services/dashboardService';
 import * as fleetService from '../services/fleetService';
@@ -14,14 +13,6 @@ export function useDashboardData() {
 
   useEffect(() => {
     let cancelled = false;
-
-    const applyMockData = (message = null) => {
-      setStats(dashboardMock.stats);
-      setRecentBookings(dashboardMock.recentBookings);
-      setFleet(dashboardMock.fleet);
-      setAlerts(dashboardMock.alerts);
-      setError(message);
-    };
 
     (async () => {
       try {
@@ -38,9 +29,17 @@ export function useDashboardData() {
           return;
         }
 
-        setStats(statsResponse.data || dashboardMock.stats);
+        setStats(statsResponse.data || null);
         setRecentBookings(Array.isArray(bookingsResponse.data?.data) ? bookingsResponse.data.data : []);
-        setFleet(fleetResponse.data || dashboardMock.fleet);
+        const vehicles = Array.isArray(fleetResponse.data?.data) ? fleetResponse.data.data : [];
+        setFleet({
+          summary: {
+            available: vehicles.filter((vehicle) => vehicle.status === 'Disponível').length,
+            reserved: vehicles.filter((vehicle) => vehicle.status === 'Reservado').length,
+            maintenance: vehicles.filter((vehicle) => vehicle.status === 'Manutenção').length,
+          },
+          vehicles: vehicles.slice(0, 5),
+        });
         setAlerts(Array.isArray(alertsResponse.data) ? alertsResponse.data : []);
         setError(null);
       } catch (err) {
@@ -48,15 +47,11 @@ export function useDashboardData() {
           return;
         }
 
-        if (!err.response) {
-          applyMockData('Backend indisponível. A mostrar dados mock no dashboard.');
-        } else {
-          setStats(null);
-          setRecentBookings([]);
-          setFleet(null);
-          setAlerts([]);
-          setError(err.response?.data?.message || 'Erro ao carregar dashboard');
-        }
+        setStats(null);
+        setRecentBookings([]);
+        setFleet([]);
+        setAlerts([]);
+        setError(err.response?.data?.message || 'Erro ao carregar dashboard');
       } finally {
         if (!cancelled) {
           setIsLoading(false);

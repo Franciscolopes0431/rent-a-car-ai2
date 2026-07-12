@@ -25,6 +25,9 @@ const authService = {
 
   checkEmail,
 
+  updateProfile: async (payload) => (await axiosClient.put('/auth/me', payload)).data,
+  updatePassword: async (payload) => (await axiosClient.put('/auth/password', payload)).data,
+
   googleAuth: async () => {
     const response = await axiosClient.post('/auth/google');
     return response.data;

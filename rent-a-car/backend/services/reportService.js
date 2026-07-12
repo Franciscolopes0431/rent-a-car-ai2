@@ -24,7 +24,7 @@ async function revenueByPeriod({ from, to, groupBy = 'day' }) {
       [fn('COUNT', col('id')), 'bookings'],
     ],
     where: {
-      status: { [Op.in]: ['Confirmada', 'Em curso', 'Concluída'] },
+      status: { [Op.in]: ['confirmada'] },
       createdAt: { [Op.between]: [start, end] },
     },
     group: ['period'],
@@ -53,56 +53,76 @@ async function bookingsByStatus({ from, to }) {
 async function topVehicles({ limit = 5, from, to }) {
   const [start, end] = buildPeriodRange({ from, to });
 
-  const rows = await Booking.findAll({
-    attributes: [
-      'vehicleId',
-      [fn('COUNT', col('Booking.id')), 'reservations'],
-      [fn('SUM', col('total_price')), 'revenue'],
-    ],
-    where: {
-      createdAt: { [Op.between]: [start, end] },
-    },
-    include: [{ model: Vehicle, as: 'vehicle', attributes: ['brand', 'model', 'plate'] }],
-    group: ['vehicle.id', 'Booking.vehicleId'],
-    order: [[literal('revenue'), 'DESC']],
-    limit: Number(limit),
-    raw: true,
-    nest: true,
-  });
+  const rows = await sequelize.query(
+    `
+      SELECT
+        b.vehicle_id AS "vehicleId",
+        COUNT(b.id) AS reservations,
+        COALESCE(SUM(b.total_price), 0) AS revenue,
+        v.brand,
+        v.model,
+        v.plate
+      FROM bookings AS b
+      LEFT JOIN vehicles AS v ON b.vehicle_id = v.id
+      WHERE b.created_at BETWEEN :start AND :end
+      GROUP BY b.vehicle_id, v.id, v.brand, v.model, v.plate
+      ORDER BY revenue DESC
+      LIMIT :limit
+    `,
+    {
+      replacements: {
+        start,
+        end,
+        limit: Number(limit),
+      },
+      type: sequelize.QueryTypes.SELECT,
+      raw: true,
+    }
+  );
 
   return rows.map((row) => ({
-    vehicle: `${row.vehicle.brand} ${row.vehicle.model}`,
-    plate: row.vehicle.plate,
-    reservations: Number(row.reservations),
-    revenue: Number(row.revenue),
+    vehicle: `${row.brand || 'Veículo'} ${row.model || ''}`.trim(),
+    plate: row.plate || '-',
+    reservations: Number(row.reservations || 0),
+    revenue: Number(row.revenue || 0),
   }));
 }
 
 async function topCustomers({ limit = 5, from, to }) {
   const [start, end] = buildPeriodRange({ from, to });
 
-  const rows = await Booking.findAll({
-    attributes: [
-      'customerId',
-      [fn('COUNT', col('Booking.id')), 'reservations'],
-      [fn('SUM', col('total_price')), 'revenue'],
-    ],
-    where: {
-      createdAt: { [Op.between]: [start, end] },
-    },
-    include: [{ model: Customer, as: 'customer', attributes: ['firstName', 'lastName', 'email'] }],
-    group: ['customer.id', 'Booking.customerId'],
-    order: [[literal('revenue'), 'DESC']],
-    limit: Number(limit),
-    raw: true,
-    nest: true,
-  });
+  const rows = await sequelize.query(
+    `
+      SELECT
+        b.customer_id AS "customerId",
+        COUNT(b.id) AS reservations,
+        COALESCE(SUM(b.total_price), 0) AS revenue,
+        c.first_name AS "firstName",
+        c.last_name AS "lastName",
+        c.email
+      FROM bookings AS b
+      LEFT JOIN customers AS c ON b.customer_id = c.id
+      WHERE b.created_at BETWEEN :start AND :end
+      GROUP BY b.customer_id, c.id, c.first_name, c.last_name, c.email
+      ORDER BY revenue DESC
+      LIMIT :limit
+    `,
+    {
+      replacements: {
+        start,
+        end,
+        limit: Number(limit),
+      },
+      type: sequelize.QueryTypes.SELECT,
+      raw: true,
+    }
+  );
 
   return rows.map((row) => ({
-    customer: `${row.customer.firstName} ${row.customer.lastName}`,
-    email: row.customer.email,
-    reservations: Number(row.reservations),
-    revenue: Number(row.revenue),
+    customer: `${row.firstName || ''} ${row.lastName || ''}`.trim() || 'Cliente sem nome',
+    email: row.email || '-',
+    reservations: Number(row.reservations || 0),
+    revenue: Number(row.revenue || 0),
   }));
 }
 
@@ -112,7 +132,7 @@ async function fleetUtilization({ from, to, limit = 10 }) {
 
   const bookings = await Booking.findAll({
     where: {
-      status: { [Op.in]: ['Confirmada', 'Em curso'] },
+      status: { [Op.in]: ['confirmada'] },
       [Op.and]: [
         { startDate: { [Op.lte]: end } },
         { endDate: { [Op.gte]: start } },
@@ -124,6 +144,10 @@ async function fleetUtilization({ from, to, limit = 10 }) {
   const utilization = {};
 
   bookings.forEach((booking) => {
+    if (!booking?.vehicle) {
+      return;
+    }
+
     const intervalStart = new Date(Math.max(new Date(booking.startDate), start));
     const intervalEnd = new Date(Math.min(new Date(booking.endDate), end));
     const days = Math.max(1, Math.ceil((intervalEnd - intervalStart) / (1000 * 60 * 60 * 24)) + 1);

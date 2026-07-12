@@ -1,5 +1,9 @@
 const { Sequelize } = require('sequelize');
-require('dotenv').config();
+const path = require('path');
+
+require('dotenv').config({
+  path: path.resolve(__dirname, '..', '.env'),
+});
 
 // Centraliza a conexao com PostgreSQL para ser reutilizada por toda a aplicacao.
 const sequelize = process.env.DATABASE_URL

@@ -1,15 +1,17 @@
 import { useEffect, useState } from 'react';
-import { Badge, Button, Offcanvas, ListGroup } from 'react-bootstrap';
+import { Alert, Button, Offcanvas, ListGroup, Spinner } from 'react-bootstrap';
 import * as bookingService from '../../services/bookingService';
 import StatusBadge from '../../components/common/StatusBadge';
 
-function BookingDetailDrawer({ booking, onHide, onUpdated }) {
+function BookingDetailDrawer({ booking, onHide, onEdit, onCancel }) {
   const [detail, setDetail] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     if (!booking) {
       setDetail(null);
+      setError('');
       return;
     }
 
@@ -18,6 +20,8 @@ function BookingDetailDrawer({ booking, onHide, onUpdated }) {
       try {
         const response = await bookingService.getById(booking.id);
         setDetail(response.data);
+      } catch (requestError) {
+        setError(requestError.response?.data?.message || 'Não foi possível carregar os detalhes.');
       } finally {
         setIsLoading(false);
       }
@@ -32,11 +36,12 @@ function BookingDetailDrawer({ booking, onHide, onUpdated }) {
         <Offcanvas.Title>Detalhes da reserva</Offcanvas.Title>
       </Offcanvas.Header>
       <Offcanvas.Body>
-        {booking ? (
+        {isLoading ? <div className="text-center py-5"><Spinner animation="border" variant="warning" /></div> : error ? <Alert variant="danger">{error}</Alert> : booking ? (
           <div>
             <div className="mb-4">
               <h5>{detail?.reference || booking.reference}</h5>
               <p className="text-secondary mb-1">{detail?.customer?.firstName} {detail?.customer?.lastName}</p>
+              <p className="small text-secondary mb-2">{detail?.customer?.email}</p>
               <StatusBadge status={detail?.status || booking.status} />
             </div>
             <ListGroup variant="flush" className="mb-4">
@@ -53,11 +58,14 @@ function BookingDetailDrawer({ booking, onHide, onUpdated }) {
                 <div>{detail ? new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR' }).format(detail.totalPrice) : '-'}</div>
               </ListGroup.Item>
               <ListGroup.Item>
-                <strong>Observações</strong>
-                <div>{detail?.notes || 'Nenhuma observação.'}</div>
+                <strong>Criada em</strong>
+                <div>{detail?.createdAt ? new Date(detail.createdAt).toLocaleString('pt-PT') : '—'}</div>
               </ListGroup.Item>
             </ListGroup>
-            <Button variant="warning" className="w-100" onClick={onUpdated}>Atualizar lista</Button>
+            <div className="d-grid gap-2">
+              <Button variant="warning" onClick={() => onEdit(detail || booking)}><i className="bi bi-pencil me-2" />Editar reserva</Button>
+              {(detail?.estado || booking.estado) !== 'cancelada' ? <Button variant="outline-danger" onClick={() => onCancel(detail || booking)}><i className="bi bi-x-circle me-2" />Cancelar reserva</Button> : null}
+            </div>
           </div>
         ) : (
           <p className="text-secondary">Selecione uma reserva para ver detalhes.</p>

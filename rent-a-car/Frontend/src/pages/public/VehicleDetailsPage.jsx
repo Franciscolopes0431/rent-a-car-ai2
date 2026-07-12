@@ -34,10 +34,10 @@ function VehicleDetailsPage() {
 
   const handleBookNow = () => {
     if (isAuthenticated) {
-      navigate(`/reserva?vehicleId=${id}`);
+      navigate(`/cliente/reserva/checkout?vehicleId=${id}`);
     } else {
       // Redirect to login, but keep intent
-      navigate(`/login?redirect=/reserva?vehicleId=${id}`);
+      navigate(`/login?redirect=/cliente/reserva/checkout?vehicleId=${id}`);
     }
   };
 
@@ -71,7 +71,7 @@ function VehicleDetailsPage() {
         </Button>
         <h1 className="h3 mb-0 text-white">{vehicle.brand} {vehicle.model}</h1>
         <span className="badge bg-secondary ms-3">{vehicle.category}</span>
-        <span className="badge bg-dark border border-secondary text-secondary ms-2">{vehicle.year}</span>
+        {vehicle.year ? <span className="badge bg-dark border border-secondary text-secondary ms-2">{vehicle.year}</span> : null}
       </div>
       
       <Row className="g-4">
@@ -93,16 +93,16 @@ function VehicleDetailsPage() {
                 <ul className="list-unstyled text-secondary">
                   <li className="mb-2"><i className="bi bi-tag me-2 text-warning"></i> <strong>Marca:</strong> {vehicle.brand}</li>
                   <li className="mb-2"><i className="bi bi-car-front me-2 text-warning"></i> <strong>Modelo:</strong> {vehicle.model}</li>
-                  <li className="mb-2"><i className="bi bi-calendar me-2 text-warning"></i> <strong>Ano:</strong> {vehicle.year}</li>
-                  <li className="mb-2"><i className="bi bi-123 me-2 text-warning"></i> <strong>Matrícula:</strong> {vehicle.license_plate}</li>
+                  {vehicle.year ? <li className="mb-2"><i className="bi bi-calendar me-2 text-warning"></i> <strong>Ano:</strong> {vehicle.year}</li> : null}
+                  <li className="mb-2"><i className="bi bi-123 me-2 text-warning"></i> <strong>Matrícula:</strong> {vehicle.plate}</li>
                 </ul>
               </Col>
               <Col sm={6}>
                  <ul className="list-unstyled text-secondary">
                   <li className="mb-2"><i className="bi bi-people me-2 text-warning"></i> <strong>Lugares:</strong> {vehicle.seats || 5}</li>
                   <li className="mb-2"><i className="bi bi-door-closed me-2 text-warning"></i> <strong>Portas:</strong> {vehicle.doors || 5}</li>
-                  <li className="mb-2"><i className="bi bi-fuel-pump me-2 text-warning"></i> <strong>Combustível:</strong> {vehicle.fuel_type || 'Gasolina'}</li>
-                  <li className="mb-2"><i className="bi bi-gear me-2 text-warning"></i> <strong>Transmissão:</strong> {vehicle.transmission || 'Manual'}</li>
+                  <li className="mb-2"><i className="bi bi-fuel-pump me-2 text-warning"></i> <strong>Combustível:</strong> {vehicle.fuelType || 'Não indicado'}</li>
+                  <li className="mb-2"><i className="bi bi-gear me-2 text-warning"></i> <strong>Transmissão:</strong> {vehicle.transmission || 'Não indicada'}</li>
                 </ul>
               </Col>
             </Row>
@@ -126,7 +126,7 @@ function VehicleDetailsPage() {
             
             <div className="d-flex justify-content-between align-items-center mb-4">
               <span className="text-secondary fs-5">Preço Diário</span>
-              <span className="text-white fs-4 fw-bold">€{vehicle.price_per_day}</span>
+              <span className="text-white fs-4 fw-bold">€{Number(vehicle.pricePerDay).toFixed(2)}</span>
             </div>
 
             <Form.Group className="mb-4">
@@ -143,8 +143,8 @@ function VehicleDetailsPage() {
 
             <div className="p-3 bg-dark rounded border border-secondary mb-4">
               <div className="d-flex justify-content-between align-items-center mb-2 text-secondary">
-                <span>€{vehicle.price_per_day} x {days} {days === 1 ? 'dia' : 'dias'}</span>
-                <span>€{(vehicle.price_per_day * days).toFixed(2)}</span>
+                <span>€{Number(vehicle.pricePerDay).toFixed(2)} x {days} {days === 1 ? 'dia' : 'dias'}</span>
+                <span>€{(Number(vehicle.pricePerDay) * days).toFixed(2)}</span>
               </div>
               <div className="d-flex justify-content-between align-items-center text-secondary mb-3">
                 <span>Taxas e Impostos</span>
@@ -152,7 +152,7 @@ function VehicleDetailsPage() {
               </div>
               <div className="d-flex justify-content-between align-items-center border-top border-secondary pt-2 mt-2">
                 <span className="text-white fw-bold">Total Estimado</span>
-                <span className="text-warning fs-4 fw-bold">€{(vehicle.price_per_day * days).toFixed(2)}</span>
+                <span className="text-warning fs-4 fw-bold">€{(Number(vehicle.pricePerDay) * days).toFixed(2)}</span>
               </div>
             </div>
 

@@ -1,12 +1,25 @@
 import { Button } from 'react-bootstrap';
+import { useLocation } from 'react-router-dom';
+
+const PAGE_TITLES = {
+  '/admin': ['Dashboard', 'Visão geral da operação'],
+  '/admin/frota': ['Frota', 'Gestão das viaturas'],
+  '/admin/reservas': ['Reservas', 'Gestão das reservas'],
+  '/admin/manutencao': ['Manutenção', 'Alertas e indisponibilidades'],
+  '/admin/clientes': ['Clientes', 'Gestão dos clientes'],
+  '/admin/relatorios': ['Relatórios', 'Análise da operação'],
+};
 
 function TopBar({ onToggleSidebar }) {
+  const { pathname } = useLocation();
   const monthYear = new Date().toLocaleDateString('pt-PT', {
     month: 'long',
     year: 'numeric',
   });
 
-  const subtitle = `Visão geral da operação · ${monthYear.charAt(0).toUpperCase()}${monthYear.slice(1)}`;
+  const pageKey = Object.keys(PAGE_TITLES).sort((a, b) => b.length - a.length).find((path) => pathname.startsWith(path)) || '/admin';
+  const [title, description] = PAGE_TITLES[pageKey];
+  const subtitle = `${description} · ${monthYear.charAt(0).toUpperCase()}${monthYear.slice(1)}`;
 
   return (
     <header className="rc-topbar">
@@ -22,21 +35,9 @@ function TopBar({ onToggleSidebar }) {
         </Button>
 
         <div>
-          <h1 className="rc-topbar-title">DASHBOARD</h1>
+          <h1 className="rc-topbar-title">{title}</h1>
           <p className="rc-topbar-subtitle">{subtitle}</p>
         </div>
-      </div>
-
-      <div className="rc-topbar-actions">
-        <Button type="button" className="rc-btn-secondary-action">
-          <i className="bi bi-plus" aria-hidden="true" />
-          <span>Nova Viatura</span>
-        </Button>
-
-        <Button type="button" className="rc-btn-primary-action">
-          <i className="bi bi-plus" aria-hidden="true" />
-          <span>Nova Reserva</span>
-        </Button>
       </div>
     </header>
   );

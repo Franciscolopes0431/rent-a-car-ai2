@@ -1,9 +1,29 @@
-const { randomUUID } = require('crypto');
 const { User } = require('../models');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { getJwtSecret } = require('../middleware/authMiddleware');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-me';
+async function verifyPassword(plainPassword, storedPassword, user) {
+  if (!plainPassword || !storedPassword) {
+    return false;
+  }
+
+  const normalizedStored = String(storedPassword).trim();
+  const normalizedPlain = String(plainPassword);
+
+  if (normalizedStored.startsWith('$2')) {
+    const match = await bcrypt.compare(normalizedPlain, normalizedStored);
+    return match;
+  }
+
+  if (normalizedStored === normalizedPlain) {
+    const hashedPassword = await bcrypt.hash(normalizedPlain, 10);
+    await user.update({ password: hashedPassword });
+    return true;
+  }
+
+  return false;
+}
 
 function toPublicUser(user) {
   return {
@@ -28,19 +48,19 @@ async function login(req, res, next) {
       where: { email: String(email).trim().toLowerCase() },
     });
 
-      if (!user) {
-        return res.status(401).json({ message: 'Invalid credentials.' });
-      }
+    if (!user) {
+      return res.status(401).json({ message: 'Invalid credentials.' });
+    }
 
-      const match = await bcrypt.compare(String(password), user.password);
-      if (!match) {
-        return res.status(401).json({ message: 'Invalid credentials.' });
-      }
+    const match = await verifyPassword(password, user.password, user);
+    if (!match) {
+      return res.status(401).json({ message: 'Invalid credentials.' });
+    }
 
-      const payload = { id: user.id, role: user.tipo, email: user.email, name: user.nome };
-      const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '2h' });
+    const payload = { id: user.id, role: user.tipo, email: user.email, name: user.nome };
+    const token = jwt.sign(payload, getJwtSecret(), { expiresIn: '2h' });
 
-      return res.json({ token, user: toPublicUser(user) });
+    return res.json({ token, user: toPublicUser(user) });
   } catch (error) {
     return next(error);
   }
@@ -48,12 +68,20 @@ async function login(req, res, next) {
 
 async function register(req, res, next) {
   try {
-    const { nome, email, password, tipo } = req.body;
+    const { nome, email, password, tipo, confirmPassword, acceptTerms } = req.body;
 
-    if (!nome || !email || !password) {
+    if (!nome || !email || !password || !confirmPassword) {
       return res.status(400).json({
-        message: 'nome, email e password sao obrigatorios.',
+        message: 'nome, email, password e confirmPassword sao obrigatorios.',
       });
+    }
+
+    if (String(password) !== String(confirmPassword)) {
+      return res.status(400).json({ message: 'As passwords nao coincidem.' });
+    }
+
+    if (acceptTerms !== true) {
+      return res.status(400).json({ message: 'Tem de aceitar os termos e condicoes.' });
     }
 
     const normalizedEmail = String(email).trim().toLowerCase();
@@ -68,7 +96,7 @@ async function register(req, res, next) {
       nome: String(nome).trim(),
       email: normalizedEmail,
       password: hashed,
-      tipo: tipo === 'admin' ? 'admin' : 'cliente',
+      tipo: 'cliente',
     });
 
     return res.status(201).json({
@@ -110,10 +138,46 @@ async function appleAuth(req, res) {
   });
 }
 
+async function updateProfile(req, res, next) {
+  try {
+    const nome = String(req.body.name || '').trim();
+    const email = String(req.body.email || '').trim().toLowerCase();
+    if (!nome || !email) return res.status(400).json({ message: 'Nome e email são obrigatórios.' });
+    const duplicate = await User.findOne({ where: { email } });
+    if (duplicate && duplicate.id !== req.user.id) return res.status(409).json({ message: 'Este email já está a ser utilizado.' });
+    const user = await User.findByPk(req.user.id);
+    if (!user) return res.status(404).json({ message: 'Utilizador não encontrado.' });
+    await user.update({ nome, email });
+    return res.json(toPublicUser(user));
+  } catch (error) {
+    return next(error);
+  }
+}
+
+async function updatePassword(req, res, next) {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    if (!currentPassword || !newPassword || String(newPassword).length < 8) {
+      return res.status(400).json({ message: 'Indique a palavra-passe atual e uma nova com pelo menos 8 caracteres.' });
+    }
+    const user = await User.findByPk(req.user.id);
+    if (!user || !(await verifyPassword(currentPassword, user.password, user))) {
+      return res.status(400).json({ message: 'A palavra-passe atual está incorreta.' });
+    }
+    await user.update({ password: await bcrypt.hash(String(newPassword), 10) });
+    return res.json({ message: 'Palavra-passe atualizada com sucesso.' });
+  } catch (error) {
+    return next(error);
+  }
+}
+
 module.exports = {
+  verifyPassword,
   login,
   register,
   checkEmail,
   googleAuth,
   appleAuth,
+  updateProfile,
+  updatePassword,
 };

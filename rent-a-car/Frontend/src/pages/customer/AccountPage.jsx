@@ -1,235 +1,45 @@
-import { Container, Row, Col, Form, Button, Card } from 'react-bootstrap';
 import { useState } from 'react';
+import { Alert, Button, Col, Container, Form, Row } from 'react-bootstrap';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
+import authService from '../../services/authService';
 
 function AccountPage() {
-  const { user } = useAuth();
-  
-  const [personalData, setPersonalData] = useState({
-    name: user?.name || 'Cliente Teste',
-    email: user?.email || 'cliente@teste.com',
-    phone: '912345678',
-    address: 'Rua do Teste, 123',
-    birthDate: '1990-01-01',
-    licenseNumber: 'L-12345678',
-    licenseExpiry: '2030-01-01'
-  });
+  const { user, updateUser } = useAuth();
+  const [profile, setProfile] = useState({ name: user?.name || '', email: user?.email || '' });
+  const [passwords, setPasswords] = useState({ currentPassword: '', newPassword: '', confirmation: '' });
+  const [feedback, setFeedback] = useState(null);
+  const [saving, setSaving] = useState('');
 
-  const [passwords, setPasswords] = useState({
-    current: '',
-    new: '',
-    confirm: ''
-  });
-
-  const [message, setMessage] = useState(null);
-
-  const handlePersonalDataChange = (e) => {
-    setPersonalData({ ...personalData, [e.target.name]: e.target.value });
+  const saveProfile = async (event) => {
+    event.preventDefault(); setSaving('profile'); setFeedback(null);
+    try { const updated = await authService.updateProfile(profile); updateUser(updated); setFeedback({ type: 'success', text: 'Dados atualizados com sucesso.' }); }
+    catch (error) { setFeedback({ type: 'danger', text: error.response?.data?.message || 'Não foi possível atualizar os dados.' }); }
+    finally { setSaving(''); }
   };
 
-  const handlePasswordChange = (e) => {
-    setPasswords({ ...passwords, [e.target.name]: e.target.value });
-  };
-
-  const handleSavePersonalData = (e) => {
-    e.preventDefault();
-    setMessage({ type: 'success', text: 'Dados pessoais atualizados com sucesso!' });
-    setTimeout(() => setMessage(null), 3000);
-  };
-
-  const handleUpdatePassword = (e) => {
-    e.preventDefault();
-    if (passwords.new !== passwords.confirm) {
-      setMessage({ type: 'danger', text: 'As palavras-passe não coincidem.' });
-      return;
-    }
-    setMessage({ type: 'success', text: 'Palavra-passe atualizada com sucesso!' });
-    setPasswords({ current: '', new: '', confirm: '' });
-    setTimeout(() => setMessage(null), 3000);
+  const savePassword = async (event) => {
+    event.preventDefault();
+    if (passwords.newPassword !== passwords.confirmation) { setFeedback({ type: 'danger', text: 'As novas palavras-passe não coincidem.' }); return; }
+    setSaving('password'); setFeedback(null);
+    try { const result = await authService.updatePassword(passwords); setPasswords({ currentPassword: '', newPassword: '', confirmation: '' }); setFeedback({ type: 'success', text: result.message }); }
+    catch (error) { setFeedback({ type: 'danger', text: error.response?.data?.message || 'Não foi possível alterar a palavra-passe.' }); }
+    finally { setSaving(''); }
   };
 
   return (
-    <Container>
-      <Row className="mb-4">
-        <Col>
-          <h1 className="h3 mb-2 text-white">A Minha Conta</h1>
-          <p className="text-secondary">Faça a gestão dos seus dados pessoais e de segurança.</p>
-        </Col>
-      </Row>
-
-      {message && (
-        <div className={`alert alert-${message.type}`} role="alert">
-          {message.text}
-        </div>
-      )}
-
+    <Container className="py-4 rc-customer-page">
+      <div className="rc-customer-page-header"><div><span className="rc-eyebrow">Perfil</span><h1>A Minha Conta</h1><p>Atualize os seus dados e mantenha a conta segura.</p></div></div>
+      {feedback ? <Alert variant={feedback.type} dismissible onClose={() => setFeedback(null)}>{feedback.text}</Alert> : null}
       <Row className="g-4">
-        <Col lg={8}>
-          <div className="rc-card">
-            <h4 className="h5 text-white mb-4 border-bottom border-secondary pb-2">Dados Pessoais</h4>
-            <Form onSubmit={handleSavePersonalData}>
-              <Row>
-                <Col md={6}>
-                  <Form.Group className="mb-3">
-                    <Form.Label className="text-secondary">Nome Completo</Form.Label>
-                    <Form.Control 
-                      type="text" 
-                      name="name"
-                      value={personalData.name}
-                      onChange={handlePersonalDataChange}
-                      required
-                      className="bg-dark text-white border-secondary" 
-                    />
-                  </Form.Group>
-                </Col>
-                <Col md={6}>
-                  <Form.Group className="mb-3">
-                    <Form.Label className="text-secondary">Email</Form.Label>
-                    <Form.Control 
-                      type="email" 
-                      name="email"
-                      value={personalData.email}
-                      onChange={handlePersonalDataChange}
-                      required
-                      className="bg-dark text-white border-secondary" 
-                    />
-                  </Form.Group>
-                </Col>
-                <Col md={6}>
-                  <Form.Group className="mb-3">
-                    <Form.Label className="text-secondary">Telefone</Form.Label>
-                    <Form.Control 
-                      type="tel" 
-                      name="phone"
-                      value={personalData.phone}
-                      onChange={handlePersonalDataChange}
-                      required
-                      className="bg-dark text-white border-secondary" 
-                    />
-                  </Form.Group>
-                </Col>
-                <Col md={6}>
-                  <Form.Group className="mb-3">
-                    <Form.Label className="text-secondary">Data de Nascimento</Form.Label>
-                    <Form.Control 
-                      type="date" 
-                      name="birthDate"
-                      value={personalData.birthDate}
-                      onChange={handlePersonalDataChange}
-                      required
-                      className="bg-dark text-white border-secondary" 
-                    />
-                  </Form.Group>
-                </Col>
-                <Col md={12}>
-                  <Form.Group className="mb-3">
-                    <Form.Label className="text-secondary">Morada Completa</Form.Label>
-                    <Form.Control 
-                      type="text" 
-                      name="address"
-                      value={personalData.address}
-                      onChange={handlePersonalDataChange}
-                      required
-                      className="bg-dark text-white border-secondary" 
-                    />
-                  </Form.Group>
-                </Col>
-                <Col md={6}>
-                  <Form.Group className="mb-3">
-                    <Form.Label className="text-secondary">Nº Carta de Condução</Form.Label>
-                    <Form.Control 
-                      type="text" 
-                      name="licenseNumber"
-                      value={personalData.licenseNumber}
-                      onChange={handlePersonalDataChange}
-                      required
-                      className="bg-dark text-white border-secondary" 
-                    />
-                  </Form.Group>
-                </Col>
-                <Col md={6}>
-                  <Form.Group className="mb-4">
-                    <Form.Label className="text-secondary">Validade da Carta</Form.Label>
-                    <Form.Control 
-                      type="date" 
-                      name="licenseExpiry"
-                      value={personalData.licenseExpiry}
-                      onChange={handlePersonalDataChange}
-                      required
-                      className="bg-dark text-white border-secondary" 
-                    />
-                  </Form.Group>
-                </Col>
-              </Row>
-              <div className="d-flex justify-content-end">
-                <Button variant="primary" type="submit" className="rc-btn-primary px-4">
-                  Guardar Alterações
-                </Button>
-              </div>
-            </Form>
-          </div>
-        </Col>
-
-        <Col lg={4}>
-          <div className="rc-card mb-4">
-            <h4 className="h5 text-white mb-4 border-bottom border-secondary pb-2">Segurança</h4>
-            <Form onSubmit={handleUpdatePassword}>
-              <Form.Group className="mb-3">
-                <Form.Label className="text-secondary">Palavra-passe Atual</Form.Label>
-                <Form.Control 
-                  type="password"
-                  name="current"
-                  value={passwords.current}
-                  onChange={handlePasswordChange}
-                  required
-                  className="bg-dark text-white border-secondary"
-                />
-              </Form.Group>
-              <Form.Group className="mb-3">
-                <Form.Label className="text-secondary">Nova Palavra-passe</Form.Label>
-                <Form.Control 
-                  type="password"
-                  name="new"
-                  value={passwords.new}
-                  onChange={handlePasswordChange}
-                  required
-                  minLength="8"
-                  className="bg-dark text-white border-secondary"
-                />
-                <Form.Text className="text-muted small">
-                  Mínimo de 8 caracteres.
-                </Form.Text>
-              </Form.Group>
-              <Form.Group className="mb-4">
-                <Form.Label className="text-secondary">Confirmar Nova Palavra-passe</Form.Label>
-                <Form.Control 
-                  type="password"
-                  name="confirm"
-                  value={passwords.confirm}
-                  onChange={handlePasswordChange}
-                  required
-                  className="bg-dark text-white border-secondary"
-                />
-              </Form.Group>
-              <Button variant="outline-light" type="submit" className="w-100">
-                Atualizar Palavra-passe
-              </Button>
-            </Form>
-          </div>
-
-          <div className="rc-card border-danger border border-1">
-            <h4 className="h5 text-danger mb-3">Zona de Perigo</h4>
-            <p className="text-secondary small mb-3">
-              Ao eliminar a sua conta, perderá o acesso a todas as suas reservas e histórico permanentemente.
-            </p>
-            <Button variant="outline-danger" className="w-100" onClick={() => alert('Modal de confirmação aqui')}>
-              Eliminar Conta
-            </Button>
-          </div>
-        </Col>
+        <Col lg={7}><div className="rc-card h-100"><h2 className="h5 mb-1">Dados pessoais</h2><p className="text-secondary small mb-4">Estes dados são usados nas suas reservas.</p>
+          <Form onSubmit={saveProfile}><Form.Group className="mb-3"><Form.Label>Nome completo</Form.Label><Form.Control required value={profile.name} onChange={(e) => setProfile({ ...profile, name: e.target.value })} /></Form.Group><Form.Group className="mb-4"><Form.Label>Email</Form.Label><Form.Control required type="email" value={profile.email} onChange={(e) => setProfile({ ...profile, email: e.target.value })} /></Form.Group><Button type="submit" variant="warning" disabled={saving === 'profile'}>{saving === 'profile' ? 'A guardar...' : 'Guardar alterações'}</Button></Form>
+        </div></Col>
+        <Col lg={5}><div className="rc-card"><h2 className="h5 mb-1">Segurança</h2><p className="text-secondary small mb-4">Use pelo menos 8 caracteres.</p>
+          <Form onSubmit={savePassword}><Form.Group className="mb-3"><Form.Label>Palavra-passe atual</Form.Label><Form.Control required type="password" value={passwords.currentPassword} onChange={(e) => setPasswords({ ...passwords, currentPassword: e.target.value })} /></Form.Group><Form.Group className="mb-3"><Form.Label>Nova palavra-passe</Form.Label><Form.Control required minLength={8} type="password" value={passwords.newPassword} onChange={(e) => setPasswords({ ...passwords, newPassword: e.target.value })} /></Form.Group><Form.Group className="mb-4"><Form.Label>Confirmar palavra-passe</Form.Label><Form.Control required type="password" value={passwords.confirmation} onChange={(e) => setPasswords({ ...passwords, confirmation: e.target.value })} /></Form.Group><Button type="submit" variant="outline-warning" disabled={saving === 'password'}>{saving === 'password' ? 'A atualizar...' : 'Alterar palavra-passe'}</Button></Form>
+        </div><div className="rc-card mt-4"><h2 className="h6">Precisa de ajuda?</h2><p className="text-secondary small">A equipa de apoio pode esclarecer questões sobre a sua conta.</p><Button as={Link} to="/suporte" variant="link" className="p-0 text-warning text-decoration-none">Contactar apoio <i className="bi bi-arrow-right" /></Button></div></Col>
       </Row>
     </Container>
   );
 }
-
 export default AccountPage;

@@ -8,10 +8,12 @@ const {
   changeVehicleStatus,
 } = require('../controllers/vehicleController');
 const { authenticate, authorize } = require('../middleware/authMiddleware');
+const { getAvailableVehicles } = require('../controllers/availabilityController');
 
 const router = express.Router();
 
 router.get('/', listVehicles);
+router.get('/available/search', getAvailableVehicles);
 router.get('/:id', getVehicle);
 router.post('/', authenticate, authorize(['admin']), createVehicle);
 router.put('/:id', authenticate, authorize(['admin']), updateVehicle);

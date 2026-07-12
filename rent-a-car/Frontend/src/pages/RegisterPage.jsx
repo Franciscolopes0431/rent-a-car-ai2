@@ -1,15 +1,8 @@
 import { Col, Container, Row } from 'react-bootstrap';
 import RegisterHeroPanel from '../components/auth/RegisterHeroPanel';
 import RegisterStep1Form from '../components/auth/RegisterStep1Form';
+import RegisterStep2Form from '../components/auth/RegisterStep2Form';
 import { useRegister } from '../context/RegisterContext';
-
-function RegisterStep2Placeholder() {
-  return (
-    <div className="text-white text-center px-4">
-      Passo 2 de registo em desenvolvimento.
-    </div>
-  );
-}
 
 function RegisterPage() {
   const { currentStep } = useRegister();
@@ -25,7 +18,7 @@ function RegisterPage() {
           lg={6}
           className="rc-register-right-panel d-flex align-items-center justify-content-center"
         >
-          {currentStep === 1 ? <RegisterStep1Form /> : <RegisterStep2Placeholder />}
+          {currentStep === 1 ? <RegisterStep1Form /> : <RegisterStep2Form />}
         </Col>
       </Row>
     </Container>

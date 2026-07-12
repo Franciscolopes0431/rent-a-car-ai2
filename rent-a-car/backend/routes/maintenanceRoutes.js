@@ -7,14 +7,15 @@ const {
   resolveMaintenance,
   deleteMaintenance,
 } = require('../controllers/maintenanceController');
+const { authenticate, authorize } = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
-router.get('/', listMaintenance);
-router.get('/:id', getMaintenance);
-router.post('/', createMaintenance);
-router.put('/:id', updateMaintenance);
-router.patch('/:id/resolve', resolveMaintenance);
-router.delete('/:id', deleteMaintenance);
+router.get('/', authenticate, authorize(['admin', 'gestor']), listMaintenance);
+router.get('/:id', authenticate, authorize(['admin', 'gestor']), getMaintenance);
+router.post('/', authenticate, authorize(['admin', 'gestor']), createMaintenance);
+router.put('/:id', authenticate, authorize(['admin', 'gestor']), updateMaintenance);
+router.patch('/:id/resolve', authenticate, authorize(['admin', 'gestor']), resolveMaintenance);
+router.delete('/:id', authenticate, authorize(['admin', 'gestor']), deleteMaintenance);
 
 module.exports = router;

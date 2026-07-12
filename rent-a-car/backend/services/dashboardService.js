@@ -1,8 +1,8 @@
 const { Op } = require('sequelize');
-const { Vehicle, Booking, MaintenanceAlert } = require('../models');
+const { Vehicle, Reservation, MaintenanceAlert } = require('../models');
 
-const ACTIVE_STATUSES = ['Confirmada', 'Em curso'];
-const REVENUE_STATUSES = ['Confirmada', 'Em curso', 'Concluída'];
+const ACTIVE_STATUSES = ['confirmada'];
+const REVENUE_STATUSES = ['confirmada'];
 
 function startOfDay(date) {
   const value = new Date(date);
@@ -33,19 +33,12 @@ function normalizeStatusValue(value) {
 
   const text = String(value).trim();
   const statusMap = {
-    0: 'Pendente',
-    1: 'Confirmada',
-    2: 'Em curso',
-    3: 'Concluída',
-    4: 'Cancelada',
-    pendente: 'Pendente',
-    confirmada: 'Confirmada',
-    'em curso': 'Em curso',
-    'em_curso': 'Em curso',
-    'em-curso': 'Em curso',
-    concluída: 'Concluída',
-    concluida: 'Concluída',
-    cancelada: 'Cancelada',
+    0: 'pendente',
+    1: 'confirmada',
+    2: 'cancelada',
+    pendente: 'pendente',
+    confirmada: 'confirmada',
+    cancelada: 'cancelada',
   };
 
   return statusMap[text.toLowerCase()] || text;
@@ -71,23 +64,23 @@ async function getStats() {
     ] = await Promise.all([
       Vehicle.count(),
       Vehicle.count({ where: { createdAt: { [Op.gte]: currentMonthStart } } }),
-      Booking.count({ where: { status: { [Op.in]: ACTIVE_STATUSES } } }),
-      Booking.count({ where: { status: 'Pendente' } }),
-      Booking.count({
+      Reservation.count({ where: { estado: { [Op.in]: ACTIVE_STATUSES } } }),
+      Reservation.count({ where: { estado: 'pendente' } }),
+      Reservation.count({
         where: {
-          status: { [Op.in]: ACTIVE_STATUSES },
-          endDate: { [Op.between]: [todayStart, todayEnd] },
+          estado: { [Op.in]: ACTIVE_STATUSES },
+          data_fim: { [Op.between]: [todayStart, todayEnd] },
         },
       }),
-      Booking.sum('totalPrice', {
+      Reservation.sum('preco_estimado', {
         where: {
-          status: { [Op.in]: REVENUE_STATUSES },
+          estado: { [Op.in]: REVENUE_STATUSES },
           createdAt: { [Op.gte]: currentMonthStart },
         },
       }),
-      Booking.sum('totalPrice', {
+      Reservation.sum('preco_estimado', {
         where: {
-          status: { [Op.in]: REVENUE_STATUSES },
+          estado: { [Op.in]: REVENUE_STATUSES },
           createdAt: { [Op.between]: [previousMonthStart, previousMonthEnd] },
         },
       }),
@@ -109,44 +102,7 @@ async function getStats() {
       revenueChangePct,
     };
   } catch (error) {
-    if (!/invalid input syntax|type integer|enum|status/i.test(error.message || '')) {
-      throw error;
-    }
-
-    const bookings = await Booking.findAll({
-      attributes: ['status', 'endDate', 'totalPrice', 'createdAt'],
-      raw: true,
-    });
-
-    const normalizedBookings = bookings.map((booking) => ({
-      ...booking,
-      status: normalizeStatusValue(booking.status),
-    }));
-
-    const currentRevenue = normalizedBookings
-      .filter((booking) => REVENUE_STATUSES.includes(booking.status))
-      .filter((booking) => booking.createdAt && new Date(booking.createdAt) >= currentMonthStart)
-      .reduce((sum, booking) => sum + Number(booking.totalPrice || 0), 0);
-
-    const previousRevenue = normalizedBookings
-      .filter((booking) => REVENUE_STATUSES.includes(booking.status))
-      .filter((booking) => booking.createdAt && new Date(booking.createdAt) >= previousMonthStart && new Date(booking.createdAt) <= previousMonthEnd)
-      .reduce((sum, booking) => sum + Number(booking.totalPrice || 0), 0);
-
-    return {
-      totalVehicles: await Vehicle.count(),
-      activeBookings: normalizedBookings.filter((booking) => ACTIVE_STATUSES.includes(booking.status)).length,
-      pendingBookings: normalizedBookings.filter((booking) => booking.status === 'Pendente').length,
-      monthRevenue: Number(currentRevenue || 0),
-      vehiclesAddedThisMonth: await Vehicle.count({ where: { createdAt: { [Op.gte]: currentMonthStart } } }),
-      bookingsEndingToday: normalizedBookings.filter((booking) => {
-        const endDate = booking.endDate ? new Date(booking.endDate) : null;
-        return ACTIVE_STATUSES.includes(booking.status) && endDate && endDate >= todayStart && endDate <= todayEnd;
-      }).length,
-      revenueChangePct: previousRevenue > 0
-        ? Number((((currentRevenue - previousRevenue) / previousRevenue) * 100).toFixed(1))
-        : null,
-    };
+    throw error;
   }
 }
 

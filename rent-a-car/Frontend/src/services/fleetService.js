@@ -1,3 +1,3 @@
 import axiosClient from '../api/axiosClient';
 
-export const getStatus = () => axiosClient.get('/vehicles/status');
+export const getStatus = () => axiosClient.get('/vehicles');

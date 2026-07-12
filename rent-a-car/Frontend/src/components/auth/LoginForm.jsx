@@ -2,10 +2,10 @@ import { useEffect, useState } from 'react';
 import { Alert, Button, Form, Spinner } from 'react-bootstrap';
 import { FiArrowRight } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import authService from '../../services/authService';
 import PasswordInput from '../common/PasswordInput';
-import SocialLoginButtons from './SocialLoginButtons';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -83,14 +83,12 @@ function LoginForm() {
         throw new Error('Token não recebido do servidor.');
       }
 
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(response.user || null));
       login({ token, user: response?.user || null });
       // Role-aware redirect
       const role = response.user?.role;
       if (role === 'admin') navigate('/admin');
       else if (role === 'gestor') navigate('/gestor');
-      else navigate('/minhas-reservas');
+      else navigate('/cliente');
     } catch (error) {
       const message = error?.response?.data?.message || error?.message || 'Não foi possível entrar na conta.';
       setApiError(message);
@@ -99,31 +97,13 @@ function LoginForm() {
     }
   };
 
-  const handleGoogleLogin = async () => {
-    try {
-      await authService.googleAuth();
-    } catch (error) {
-      const message = error?.response?.data?.message || 'Falha ao iniciar login com Google.';
-      setApiError(message);
-    }
-  };
-
-  const handleAppleLogin = async () => {
-    try {
-      await authService.appleAuth();
-    } catch (error) {
-      const message = error?.response?.data?.message || 'Falha ao iniciar login com Apple.';
-      setApiError(message);
-    }
-  };
-
   return (
     <div className="rc-form-wrapper">
       <p className="rc-kicker">BEM-VINDO DE VOLTA</p>
-      <h2 className="rc-form-title">ACESSE SUA CONTA</h2>
+      <h2 className="rc-form-title">ACEDA À SUA CONTA</h2>
 
       <p className="rc-signup-text">
-        Não tem conta? <a href="/registo">Registre-se gratuitamente</a>
+        Não tem conta? <Link to="/registo">Registe-se gratuitamente</Link>
       </p>
 
       {apiError ? (
@@ -157,10 +137,7 @@ function LoginForm() {
 
         <Form.Group className="mb-3" controlId="password">
           <div className="d-flex align-items-center justify-content-between mb-2">
-            <Form.Label className="rc-input-label mb-0">SENHA</Form.Label>
-            <a className="rc-link-inline" href="/forgot-password">
-              Esqueceu a senha?
-            </a>
+            <Form.Label className="rc-input-label mb-0">PALAVRA-PASSE</Form.Label>
           </div>
 
           <PasswordInput
@@ -209,19 +186,9 @@ function LoginForm() {
         </Button>
       </Form>
 
-      <div className="rc-separator" role="separator" aria-label="Ou">
-        <span>OU</span>
-      </div>
-
-      <SocialLoginButtons
-        onGoogle={handleGoogleLogin}
-        onApple={handleAppleLogin}
-        disabled={isLoading}
-      />
-
       <p className="rc-terms-text">
-        Ao entrar, concorda com os nossos <a href="/terms">Termos de Serviço</a> e{' '}
-        <a href="/privacy">Política de Privacidade</a>
+        Ao entrar, concorda com os nossos <Link to="/termos">Termos de Serviço</Link> e{' '}
+        <Link to="/privacidade">Política de Privacidade</Link>
       </p>
     </div>
   );

@@ -18,6 +18,16 @@ import GestorBookingsPage from './pages/gestor/bookings/GestorBookingsPage';
 import GestorCustomersPage from './pages/gestor/customers/GestorCustomersPage';
 import GestorMaintenancePage from './pages/gestor/maintenance/GestorMaintenancePage';
 import GestorReportsPage from './pages/gestor/reports/GestorReportsPage';
+import CustomerLayout from './components/layout/customer/CustomerLayout';
+import VehicleCatalogPage from './pages/public/VehicleCatalogPage';
+import VehicleDetailsPage from './pages/public/VehicleDetailsPage';
+import AccountPage from './pages/customer/AccountPage';
+import PaymentMethodsPage from './pages/customer/PaymentMethodsPage';
+import CheckoutPage from './pages/customer/CheckoutPage';
+import MyBookingsPage from './pages/customer/MyBookingsPage';
+import HistoryPage from './pages/customer/HistoryPage';
+import ReviewsPage from './pages/customer/ReviewsPage';
+import SupportPage from './pages/customer/SupportPage';
 
 function SectionPlaceholder({ title }) {
   return (
@@ -35,7 +45,22 @@ function BookingDetailsPlaceholder() {
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/admin" replace />} />
+      <Route element={<CustomerLayout />}>
+        <Route path="/" element={<VehicleCatalogPage />} />
+        <Route path="/frota" element={<VehicleCatalogPage />} />
+        <Route path="/frota/:id" element={<VehicleDetailsPage />} />
+        
+        <Route element={<ProtectedRoute role="customer" />}>
+          <Route path="/minha-conta" element={<AccountPage />} />
+          <Route path="/metodos-pagamento" element={<PaymentMethodsPage />} />
+          <Route path="/reserva" element={<CheckoutPage />} />
+          <Route path="/minhas-reservas" element={<MyBookingsPage />} />
+          <Route path="/historico" element={<HistoryPage />} />
+          <Route path="/avaliacoes" element={<ReviewsPage />} />
+          <Route path="/suporte" element={<SupportPage />} />
+        </Route>
+      </Route>
+
       <Route path="/login" element={<LoginPage />} />
       <Route
         path="/registo"
@@ -44,9 +69,7 @@ function App() {
             <RegisterPage />
           </RegisterProvider>
         )}
-      />
-
-      <Route element={<ProtectedRoute role="admin" />}>
+      />      <Route element={<ProtectedRoute role="admin" />}>
         <Route element={<DashboardLayout />}>
           <Route path="/admin" element={<DashboardPage />} />
           <Route path="/admin/frota" element={<FleetPage />} />
@@ -72,7 +95,7 @@ function App() {
       </Route>
 
       <Route path="/dashboard" element={<Navigate to="/admin" replace />} />
-      <Route path="*" element={<Navigate to="/admin" replace />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }

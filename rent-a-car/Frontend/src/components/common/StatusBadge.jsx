@@ -1,16 +1,18 @@
 function StatusBadge({ status }) {
   const statusMap = {
-    Disponível: 'badge-success',
-    Reservado: 'badge-warning',
-    'Em curso': 'badge-info',
-    Confirmada: 'badge-primary',
-    Pendente: 'badge-secondary',
-    Concluída: 'badge-success',
-    Cancelada: 'badge-danger',
-    Manutenção: 'badge-danger',
+    // Fleet status
+    Disponível: 'bg-success',
+    Reservado: 'bg-warning text-dark',
+    Manutenção: 'bg-danger',
+    // Booking status
+    Pendente: 'bg-warning text-dark',
+    Confirmada: 'bg-primary',
+    'Em curso': 'bg-success',
+    Concluída: 'bg-secondary',
+    Cancelada: 'bg-danger',
   };
 
-  const variant = statusMap[status] || 'badge-secondary';
+  const variant = statusMap[status] || 'bg-secondary';
 
   return <span className={`badge ${variant} rc-status-badge`}>{status}</span>;
 }

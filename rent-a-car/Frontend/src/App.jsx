@@ -22,6 +22,8 @@ import CustomerLayout from './components/layout/customer/CustomerLayout';
 import LandingPage from './pages/LandingPage';
 import VehicleCatalogPage from './pages/public/VehicleCatalogPage';
 import VehicleDetailsPage from './pages/public/VehicleDetailsPage';
+import AboutUsPage from './pages/public/AboutUsPage';
+import ContactPage from './pages/public/ContactPage';
 import AccountPage from './pages/customer/AccountPage';
 import PaymentMethodsPage from './pages/customer/PaymentMethodsPage';
 import CheckoutPage from './pages/customer/CheckoutPage';
@@ -50,6 +52,8 @@ function App() {
       <Route element={<CustomerLayout />}>
         <Route path="/frota" element={<VehicleCatalogPage />} />
         <Route path="/frota/:id" element={<VehicleDetailsPage />} />
+        <Route path="/sobre" element={<AboutUsPage />} />
+        <Route path="/contactos" element={<ContactPage />} />
         
         <Route element={<ProtectedRoute role="customer" />}>
           <Route path="/minha-conta" element={<AccountPage />} />

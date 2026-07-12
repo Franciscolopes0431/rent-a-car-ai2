@@ -13,8 +13,8 @@ function LandingNavbar() {
         <Navbar.Collapse id="landing-navbar-nav">
           <Nav className="mx-auto">
             <Nav.Link as={Link} to="/frota">Fleet</Nav.Link>
-            <Nav.Link as={Link} to="/about">About</Nav.Link>
-            <Nav.Link as={Link} to="/contacts">Contacts</Nav.Link>
+            <Nav.Link as={Link} to="/sobre">Sobre Nós</Nav.Link>
+            <Nav.Link as={Link} to="/contactos">Contactos</Nav.Link>
           </Nav>
           <Nav>
             <Nav.Link as={Link} to="/login">Sign in</Nav.Link>

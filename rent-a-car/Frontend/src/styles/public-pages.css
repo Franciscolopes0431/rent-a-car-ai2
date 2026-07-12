@@ -1,0 +1,151 @@
+/* Styles for About Us and Contact Pages */
+
+.rc-public-page .rc-hero-section {
+  position: relative;
+  min-height: 400px;
+  background-image: url('https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?q=80&w=2070&auto=format&fit=crop');
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 1rem;
+}
+
+.rc-public-page .contact-hero {
+  background-image: url('https://images.unsplash.com/photo-1521791055366-0d553872125f?q=80&w=2069&auto=format&fit=crop');
+}
+
+.rc-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.7));
+  z-index: 1;
+}
+
+.rc-hero-content {
+  position: relative;
+  z-index: 2;
+}
+
+/* Animations */
+.animate-fade-in-up {
+  animation: fadeInUp 0.8s ease-out forwards;
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.delay-1 {
+  animation-delay: 0.2s;
+}
+
+@keyframes fadeInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Specific component styling */
+.rc-section-title {
+  position: relative;
+  display: inline-block;
+  color: var(--rc-text-primary);
+}
+
+.rc-section-title::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -8px;
+  height: 3px;
+  width: 50px;
+  background-color: var(--rc-primary);
+  border-radius: 2px;
+}
+
+.rc-mission-card {
+  background-color: var(--rc-bg-secondary);
+  border-left: 4px solid var(--rc-primary);
+}
+
+.rc-stats-section {
+  background-color: var(--rc-bg-secondary);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+}
+
+.rc-feature-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  background-color: var(--rc-bg-secondary);
+}
+
+.rc-feature-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important;
+}
+
+.rc-feature-icon {
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(var(--bs-primary-rgb), 0.1);
+  border-radius: 50%;
+  transition: background-color 0.3s ease;
+}
+
+.rc-feature-card:hover .rc-feature-icon {
+  background-color: var(--rc-primary);
+  color: white !important;
+}
+
+/* Contact Page Specifics */
+.rc-contact-card {
+  border-radius: 0.75rem;
+}
+
+.rc-icon-box {
+  width: 45px;
+  height: 45px;
+  font-size: 1.2rem;
+}
+
+.rc-social-link {
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.rc-social-link:hover {
+  background-color: var(--rc-primary) !important;
+  color: white !important;
+  transform: translateY(-3px);
+}
+
+.rc-info-card {
+  background-color: var(--rc-bg-secondary);
+}
+
+.rc-faq-section .accordion-button:not(.collapsed) {
+  background-color: rgba(var(--bs-primary-rgb), 0.1);
+  color: var(--rc-primary);
+  font-weight: bold;
+}
+
+.rc-faq-section .accordion-button:focus {
+  box-shadow: none;
+  border-color: rgba(var(--bs-primary-rgb), 0.5);
+}
+
+/* CTA */
+.rc-cta-section {
+  background-image: linear-gradient(135deg, var(--rc-primary) 0%, #0a4275 100%);
+}
+
+.rc-btn-cta {
+  transition: transform 0.2s;
+}
+
+.rc-btn-cta:hover {
+  transform: scale(1.05);
+}

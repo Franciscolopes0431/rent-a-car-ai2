@@ -9,7 +9,11 @@ const { sequelize } = require('../models');
 async function run() {
   try {
     await sequelize.authenticate();
+    await sequelize.query(`DO $$ BEGIN
+      ALTER TYPE "enum_reservations_estado" ADD VALUE IF NOT EXISTS 'concluida';
+    EXCEPTION WHEN undefined_object THEN NULL; END $$;`);
     await sequelize.sync({ alter: true });
+    await sequelize.query('ALTER TABLE "support_tickets" ALTER COLUMN "userId" DROP NOT NULL');
 
     await sequelize.query(`
       ALTER TABLE vehicles

@@ -86,19 +86,16 @@ function DashboardPage() {
 
       <Row className="g-3 mb-4">
         <Col xl={8}>
-          <RecentBookingsTable bookings={recentBookings} isLoading={isLoading} />
+          <div className="rc-dashboard-stack rc-dashboard-stack-main">
+            <RecentBookingsTable bookings={recentBookings} isLoading={isLoading} />
+            <AlertsPanel alerts={alerts} isLoading={isLoading} />
+          </div>
         </Col>
         <Col xl={4}>
-          <FleetStatusPanel fleet={fleet} isLoading={isLoading} />
-        </Col>
-      </Row>
-
-      <Row className="g-3">
-        <Col xl={7}>
-          <AlertsPanel alerts={alerts} isLoading={isLoading} />
-        </Col>
-        <Col xl={5}>
-          <QuickAccessPanel isLoading={isLoading} />
+          <div className="rc-dashboard-stack">
+            <FleetStatusPanel fleet={fleet} isLoading={isLoading} />
+            <QuickAccessPanel isLoading={isLoading} />
+          </div>
         </Col>
       </Row>
 

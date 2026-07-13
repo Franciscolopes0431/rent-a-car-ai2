@@ -1,5 +1,5 @@
 const { Op } = require('sequelize');
-const { Vehicle, Booking, Customer } = require('../models');
+const { Vehicle, Reservation, User } = require('../models');
 
 async function list({ status, category, search, page = 1, pageSize = 10 }) {
   const where = {};
@@ -36,13 +36,13 @@ async function findById(id) {
   const vehicle = await Vehicle.findByPk(id, {
     include: [
       {
-        model: Booking,
-        as: 'bookings',
+        model: Reservation,
+        as: 'reservations',
         include: [
           {
-            model: Customer,
-            as: 'customer',
-            attributes: ['id', 'firstName', 'lastName', 'email'],
+            model: User,
+            as: 'user',
+            attributes: ['id', 'nome', 'email'],
           },
         ],
       },
@@ -55,7 +55,21 @@ async function findById(id) {
     throw error;
   }
 
-  return vehicle;
+  const result = vehicle.toJSON();
+  result.bookings = (result.reservations || []).map((reservation) => ({
+    ...reservation,
+    status: reservation.estado,
+    startDate: reservation.data_inicio,
+    endDate: reservation.data_fim,
+    totalPrice: reservation.preco_estimado,
+    customer: reservation.user ? {
+      id: reservation.user.id,
+      firstName: reservation.user.nome.split(' ')[0],
+      lastName: reservation.user.nome.split(' ').slice(1).join(' '),
+      email: reservation.user.email,
+    } : null,
+  }));
+  return result;
 }
 
 async function create(payload) {
@@ -78,6 +92,13 @@ async function remove(id) {
   if (!vehicle) {
     const error = new Error('Viatura não encontrada');
     error.status = 404;
+    throw error;
+  }
+
+  const reservationCount = await Reservation.count({ where: { vehicleId: id } });
+  if (reservationCount > 0) {
+    const error = new Error('Não é possível eliminar uma viatura com reservas. Coloque-a em manutenção para preservar o histórico.');
+    error.status = 409;
     throw error;
   }
 

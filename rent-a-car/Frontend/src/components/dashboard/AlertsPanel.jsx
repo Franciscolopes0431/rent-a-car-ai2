@@ -1,11 +1,13 @@
 import { Placeholder } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
 
-function AlertsPanel({ alerts, isLoading }) {
+function AlertsPanel({ alerts, isLoading, basePath = '/admin' }) {
+  const navigate = useNavigate();
   return (
     <section className="rc-card rc-alerts-card">
       <div className="rc-card-header">
         <h2>ALERTAS E INDISPONIBILIDADES</h2>
-        <button type="button" className="rc-inline-link">
+        <button type="button" className="rc-inline-link" onClick={() => navigate(`${basePath}/manutencao`)}>
           Gerir <i className="bi bi-chevron-right" aria-hidden="true" />
         </button>
       </div>

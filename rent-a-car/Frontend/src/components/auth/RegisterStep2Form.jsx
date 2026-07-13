@@ -83,7 +83,7 @@ function RegisterStep2Form() {
   };
 
   return (
-    <section className="rc-register-form-wrapper px-4 px-sm-3">
+    <section className="rc-register-form-wrapper">
       <p className="rc-register-kicker">PASSO 2 DE 2</p>
       <h2 className="rc-register-title">
         CRIE A

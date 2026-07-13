@@ -13,10 +13,15 @@ async function getAvailableVehicles(req, res, next) {
     }
 
     const { inicio, fim } = normalizeDateRange(data_inicio, data_fim);
+    const today = new Date();
+    today.setUTCHours(0, 0, 0, 0);
+    if (inicio < today) {
+      return res.status(400).json({ message: 'O levantamento não pode ser anterior à data atual.' });
+    }
 
     const availableVehicles = await Vehicle.findAll({
       where: {
-        status: 'Disponível',
+        status: { [Op.ne]: 'Manutenção' },
       },
     });
 
@@ -55,6 +60,9 @@ async function getAvailableVehicles(req, res, next) {
 
     return res.json(filteredVehicles);
   } catch (error) {
+    if (/Data invalida|deve ser menor/.test(error.message)) {
+      return res.status(400).json({ message: error.message });
+    }
     return next(error);
   }
 }

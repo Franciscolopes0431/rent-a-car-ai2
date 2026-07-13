@@ -3,7 +3,7 @@ import { Button, Form, Modal } from 'react-bootstrap';
 import * as customerService from '../../services/customerService';
 
 function CustomerFormModal({ show, customer, onHide, onSaved }) {
-  const [formData, setFormData] = useState({ firstName: '', lastName: '', email: '', phone: '' });
+  const [formData, setFormData] = useState({ firstName: '', lastName: '', email: '', phone: '', password: '' });
   const [errors, setErrors] = useState({});
   const [isSaving, setIsSaving] = useState(false);
 
@@ -14,9 +14,10 @@ function CustomerFormModal({ show, customer, onHide, onSaved }) {
         lastName: customer.lastName || '',
         email: customer.email || '',
         phone: customer.phone || '',
+        password: '',
       });
     } else {
-      setFormData({ firstName: '', lastName: '', email: '', phone: '' });
+      setFormData({ firstName: '', lastName: '', email: '', phone: '', password: '' });
     }
     setErrors({});
   }, [customer, show]);
@@ -28,6 +29,7 @@ function CustomerFormModal({ show, customer, onHide, onSaved }) {
     if (!formData.email) payloadErrors.email = 'O email é obrigatório.';
     if (formData.email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(formData.email)) payloadErrors.email = 'Formato de email inválido.';
     if (!formData.phone) payloadErrors.phone = 'O telefone é obrigatório.';
+    if (!customer && formData.password.length < 8) payloadErrors.password = 'Use pelo menos 8 caracteres.';
     setErrors(payloadErrors);
     return Object.keys(payloadErrors).length === 0;
   };
@@ -99,6 +101,11 @@ function CustomerFormModal({ show, customer, onHide, onSaved }) {
               isInvalid={!!errors.phone}
             />
             <Form.Control.Feedback type="invalid">{errors.phone}</Form.Control.Feedback>
+          </Form.Group>
+          <Form.Group controlId="customerPassword" className="mb-3">
+            <Form.Label>{customer ? 'Nova palavra-passe (opcional)' : 'Palavra-passe inicial'}</Form.Label>
+            <Form.Control type="password" minLength={8} required={!customer} value={formData.password} onChange={(event) => setFormData({ ...formData, password: event.target.value })} isInvalid={!!errors.password} />
+            <Form.Control.Feedback type="invalid">{errors.password}</Form.Control.Feedback>
           </Form.Group>
         </Modal.Body>
         <Modal.Footer>

@@ -1,0 +1,14 @@
+const express = require('express');
+const { authenticate, authorize } = require('../middleware/authMiddleware');
+const controller = require('../controllers/adminController');
+const router = express.Router();
+router.use(authenticate, authorize(['admin']));
+router.get('/staff', controller.listStaff);
+router.post('/staff', controller.createStaff);
+router.put('/staff/:id', controller.updateStaff);
+router.patch('/staff/:id/password', controller.updateStaffPassword);
+router.delete('/staff/:id', controller.deleteStaff);
+router.get('/audit', controller.listAuditLogs);
+router.get('/settings', controller.getSettings);
+router.put('/settings', controller.updateSettings);
+module.exports = router;

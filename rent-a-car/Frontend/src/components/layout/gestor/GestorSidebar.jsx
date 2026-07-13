@@ -1,5 +1,6 @@
 ﻿import { NavLink } from 'react-router-dom';
 import Logo from '../../common/Logo';
+import { Link } from 'react-router-dom';
 import GestorSidebarUserCard from './GestorSidebarUserCard';
 
 const NAV_ITEMS = [
@@ -9,13 +10,17 @@ const NAV_ITEMS = [
   { to: '/gestor/manutencao', label: 'Manutenção', icon: 'bi-tools' },
   { to: '/gestor/clientes', label: 'Clientes', icon: 'bi-people' },
   { to: '/gestor/relatorios', label: 'Relatórios', icon: 'bi-bar-chart' },
+  { to: '/gestor/apoio', label: 'Apoio', icon: 'bi-life-preserver' },
+  { to: '/gestor/avaliacoes', label: 'Avaliações', icon: 'bi-star' },
 ];
 
 function GestorSidebar({ onNavigate }) {
   return (
     <aside className="rc-sidebar">
       <div className="rc-sidebar-logo-wrap">
-        <Logo />
+        <Link to="/" onClick={onNavigate} className="rc-sidebar-home-link" aria-label="Voltar à página inicial">
+          <Logo />
+        </Link>
       </div>
 
       <nav className="rc-sidebar-nav" aria-label="Navegação principal">

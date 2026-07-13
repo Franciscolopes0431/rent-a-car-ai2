@@ -17,7 +17,9 @@ function toDateOnlyString(value) {
   const date = new Date(textValue);
 
   if (Number.isNaN(date.getTime())) {
-    throw new Error('Data invalida.');
+    const error = new Error('Data invalida.');
+    error.status = 400;
+    throw error;
   }
 
   return date.toISOString().slice(0, 10);
@@ -28,7 +30,9 @@ function parseDateOrThrow(value, fieldName) {
   const date = new Date(`${dateOnly}T00:00:00Z`);
 
   if (Number.isNaN(date.getTime())) {
-    throw new Error(`Campo ${fieldName} invalido.`);
+    const error = new Error(`Campo ${fieldName} invalido.`);
+    error.status = 400;
+    throw error;
   }
 
   return date;
@@ -39,7 +43,9 @@ function normalizeDateRange(dataInicio, dataFim) {
   const fim = parseDateOrThrow(dataFim, 'data_fim');
 
   if (inicio >= fim) {
-    throw new Error('data_inicio deve ser menor que data_fim.');
+    const error = new Error('data_inicio deve ser menor que data_fim.');
+    error.status = 400;
+    throw error;
   }
 
   return { inicio, fim };

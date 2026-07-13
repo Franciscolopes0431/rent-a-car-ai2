@@ -23,18 +23,25 @@ function ClientDashboardPage() {
 
   const data = useMemo(() => {
     const upcoming = bookings.filter((booking) => booking.estado !== 'cancelada' && booking.data_fim >= today).sort((a, b) => a.data_inicio.localeCompare(b.data_inicio));
-    const finished = bookings.filter((booking) => booking.estado === 'confirmada' && booking.data_fim < today);
+    const finished = bookings.filter((booking) => booking.estado === 'concluida');
     const rentalDays = finished.reduce((total, booking) => total + Math.max(1, Math.ceil((new Date(`${booking.data_fim}T00:00:00`) - new Date(`${booking.data_inicio}T00:00:00`)) / dayMs)), 0);
     const spent = finished.reduce((total, booking) => total + Number(booking.preco_estimado || 0), 0);
-    return { upcoming, finished, rentalDays, spent };
-  }, [bookings, today]);
+    return {
+      upcoming,
+      finished,
+      rentalDays: summary.rentalDays ?? rentalDays,
+      spent: summary.spent ?? spent,
+      finishedCount: summary.finished ?? finished.length,
+      activeCount: summary.active ?? upcoming.length,
+    };
+  }, [bookings, summary, today]);
 
   if (isLoading) return <div className="text-center py-5"><Spinner animation="border" variant="warning" /></div>;
 
   return (
     <Container fluid className="py-4 rc-client-dashboard">
       <section className="rc-client-welcome mb-4">
-        <div><span className="rc-eyebrow">Área do cliente</span><h1>Olá, {firstName} <span aria-hidden="true">👋</span></h1><p>Bem-vindo novamente. {data.upcoming.length === 1 ? 'Tem 1 reserva ativa.' : `Tem ${data.upcoming.length} reservas ativas.`}</p></div>
+        <div><span className="rc-eyebrow">Área do cliente</span><h1>Olá, {firstName} <span aria-hidden="true">👋</span></h1><p>Bem-vindo novamente. {data.activeCount === 1 ? 'Tem 1 reserva ativa.' : `Tem ${data.activeCount} reservas ativas.`}</p></div>
         <Button as={Link} to="/cliente/frota" variant="warning" size="lg"><i className="bi bi-plus-lg me-2" />Nova reserva</Button>
       </section>
 
@@ -44,7 +51,7 @@ function ClientDashboardPage() {
         {[
           { label: 'Reservas', value: summary.total, icon: 'bi-calendar3' },
           { label: 'Dias alugados', value: data.rentalDays, icon: 'bi-clock-history' },
-          { label: 'Viagens terminadas', value: data.finished.length, icon: 'bi-check2-circle' },
+          { label: 'Viagens terminadas', value: data.finishedCount, icon: 'bi-check2-circle' },
           { label: 'Total acumulado', value: money.format(data.spent), icon: 'bi-wallet2' },
         ].map((stat) => <Col sm={6} xl={3} key={stat.label}><article className="rc-client-stat"><div><i className={`bi ${stat.icon}`} /><span>{stat.label}</span></div><strong>{stat.value ?? 0}</strong></article></Col>)}
       </Row>

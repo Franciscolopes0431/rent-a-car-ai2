@@ -28,6 +28,10 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         defaultValue: 'cliente',
       },
+      phone: {
+        type: DataTypes.STRING(30),
+        allowNull: true,
+      },
     },
     {
       tableName: 'users',

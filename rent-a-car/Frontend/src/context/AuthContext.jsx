@@ -1,21 +1,22 @@
 import { createContext, useMemo, useReducer } from 'react';
+import axiosClient from '../api/axiosClient';
 
 const STORAGE_KEY = 'authSession';
 
 function readStoredSession() {
   if (typeof window === 'undefined') {
-    return { user: null, token: null };
+    return { user: null };
   }
 
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
+    const raw = window.localStorage.getItem(STORAGE_KEY)
+      || window.sessionStorage.getItem(STORAGE_KEY);
     const parsed = raw ? JSON.parse(raw) : null;
     return {
       user: parsed?.user || null,
-      token: parsed?.token || null,
     };
   } catch {
-    return { user: null, token: null };
+    return { user: null };
   }
 }
 
@@ -23,8 +24,7 @@ const storedSession = readStoredSession();
 
 const initialState = {
   user: storedSession.user || null,
-  token: storedSession.token || null,
-  isAuthenticated: Boolean(storedSession.token),
+  isAuthenticated: Boolean(storedSession.user),
 };
 
 const AuthContext = createContext(null);
@@ -35,14 +35,12 @@ function authReducer(state, action) {
       return {
         ...state,
         user: action.payload.user || null,
-        token: action.payload.token,
         isAuthenticated: true,
       };
     case 'LOGOUT':
       return {
         ...state,
         user: null,
-        token: null,
         isAuthenticated: false,
       };
     case 'UPDATE_USER':
@@ -57,22 +55,29 @@ export function AuthProvider({ children }) {
 
   const login = (payload) => {
     if (typeof window !== 'undefined') {
-      window.localStorage.setItem('authSession', JSON.stringify(payload));
+      const storage = payload.rememberMe ? window.localStorage : window.sessionStorage;
+      window.localStorage.removeItem(STORAGE_KEY);
+      window.sessionStorage.removeItem(STORAGE_KEY);
+      storage.setItem(STORAGE_KEY, JSON.stringify({ user: payload.user }));
     }
     dispatch({ type: 'LOGIN_SUCCESS', payload });
   };
 
   const logout = () => {
+    axiosClient.post('/auth/logout').catch(() => {});
     if (typeof window !== 'undefined') {
       window.localStorage.removeItem('authSession');
+      window.sessionStorage.removeItem(STORAGE_KEY);
     }
     dispatch({ type: 'LOGOUT' });
   };
 
   const updateUser = (user) => {
     if (typeof window !== 'undefined') {
-      const current = readStoredSession();
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ token: current.token, user }));
+      const storage = window.localStorage.getItem(STORAGE_KEY)
+        ? window.localStorage
+        : window.sessionStorage;
+      storage.setItem(STORAGE_KEY, JSON.stringify({ user }));
     }
     dispatch({ type: 'UPDATE_USER', payload: user });
   };

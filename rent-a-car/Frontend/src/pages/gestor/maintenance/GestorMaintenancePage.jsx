@@ -3,18 +3,14 @@ import { Button, Col, Form, Row } from 'react-bootstrap';
 import PageHeader from '../../../components/common/PageHeader';
 import DataTable from '../../../components/common/DataTable';
 import Pagination from '../../../components/common/Pagination';
-import ConfirmDialog from '../../../components/common/ConfirmDialog';
 import EmptyState from '../../../components/common/EmptyState';
 import GestorMaintenanceFormModal from './GestorMaintenanceFormModal';
 import { useMaintenance } from '../../../hooks/useMaintenance';
-import * as maintenanceService from '../../../services/maintenanceService';
 
 function GestorMaintenancePage() {
   const { alerts, pagination, filters, setFilters, setPagination, isLoading, error, refetch, typeOptions } = useMaintenance();
   const [showForm, setShowForm] = useState(false);
   const [editingAlert, setEditingAlert] = useState(null);
-  const [deleteTarget, setDeleteTarget] = useState(null);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const actions = [
     {
@@ -59,22 +55,12 @@ function GestorMaintenancePage() {
         render: (alert) => (
           <div className="d-flex gap-2">
             <Button variant="link" className="text-secondary p-0" onClick={(e) => { e.stopPropagation(); setEditingAlert(alert); setShowForm(true); }}><i className="bi bi-pencil" /></Button>
-            <Button variant="link" className="text-danger p-0" onClick={(e) => { e.stopPropagation(); setDeleteTarget(alert); setShowDeleteConfirm(true); }}><i className="bi bi-trash" /></Button>
           </div>
         ),
       },
     ],
     []
   );
-
-  const handleDeleteConfirmed = async () => {
-    if (deleteTarget) {
-      await maintenanceService.remove(deleteTarget.id);
-      setShowDeleteConfirm(false);
-      setDeleteTarget(null);
-      refetch();
-    }
-  };
 
   return (
     <div>
@@ -132,13 +118,6 @@ function GestorMaintenancePage() {
         onSaved={() => { setShowForm(false); setEditingAlert(null); refetch(); }}
       />
 
-      <ConfirmDialog
-        show={showDeleteConfirm}
-        title="Eliminar alerta"
-        message="Tem a certeza que deseja eliminar este alerta de manutenção?"
-        onCancel={() => setShowDeleteConfirm(false)}
-        onConfirm={handleDeleteConfirmed}
-      />
     </div>
   );
 }

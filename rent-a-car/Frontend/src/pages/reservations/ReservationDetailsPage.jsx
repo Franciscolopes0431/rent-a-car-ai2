@@ -36,6 +36,8 @@ function ReservationDetailsPage() {
         <dd className="col-sm-8 text-white">{reservation.vehicle?.brand} {reservation.vehicle?.model} · {reservation.vehicle?.plate}</dd>
         <dt className="col-sm-4 text-secondary">Levantamento</dt>
         <dd className="col-sm-8 text-white">{new Date(reservation.data_inicio).toLocaleDateString('pt-PT')}</dd>
+        <dt className="col-sm-4 text-secondary">Local</dt>
+        <dd className="col-sm-8 text-white">{reservation.pickupLocation || 'Não indicado'}</dd>
         <dt className="col-sm-4 text-secondary">Devolução</dt>
         <dd className="col-sm-8 text-white">{new Date(reservation.data_fim).toLocaleDateString('pt-PT')}</dd>
         <dt className="col-sm-4 text-secondary">Preço estimado</dt>

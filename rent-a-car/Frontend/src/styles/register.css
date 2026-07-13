@@ -6,7 +6,7 @@
 .rc-register-hero-panel {
   min-height: 100vh;
   width: 100%;
-  background-position: center;
+  background-position: 56% center;
   background-repeat: no-repeat;
   background-size: cover;
 }
@@ -17,6 +17,8 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  position: relative;
+  z-index: 1;
 }
 
 .rc-register-hero-bottom {
@@ -69,7 +71,10 @@
 
 .rc-register-right-panel {
   min-height: 100vh;
-  background: var(--rc-panel-dark);
+  background:
+    radial-gradient(circle at 80% 15%, rgba(245, 184, 28, 0.055), transparent 30%),
+    var(--rc-panel-dark);
+  border-left: 1px solid rgba(255, 255, 255, 0.04);
   padding: 2rem 1.25rem;
 }
 
@@ -159,8 +164,8 @@
 
 .rc-register-input.form-control,
 .rc-register-input.form-control:focus {
-  height: 3rem;
-  border-radius: 0.5rem;
+  height: 3.2rem;
+  border-radius: 0.7rem;
   border: 1px solid var(--rc-input-border);
   background-color: var(--rc-input-bg);
   color: var(--rc-text-primary);
@@ -185,9 +190,9 @@
 
 .rc-register-primary-btn.btn {
   width: 100%;
-  min-height: 3rem;
+  min-height: 3.2rem;
   border: 0;
-  border-radius: 0.5rem;
+  border-radius: 0.7rem;
   background: var(--rc-yellow);
   color: #0f0f0f;
   font-size: 0.78rem;
@@ -221,6 +226,13 @@
 
 @media (max-width: 991.98px) {
   .rc-register-right-panel {
-    padding: 2rem 1rem;
+    padding: 2rem 1.25rem;
+  }
+}
+
+@media (max-height: 760px) and (min-width: 992px) {
+  .rc-register-right-panel {
+    align-items: flex-start !important;
+    overflow-y: auto;
   }
 }

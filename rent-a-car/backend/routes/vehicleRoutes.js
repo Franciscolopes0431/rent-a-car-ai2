@@ -15,9 +15,9 @@ const router = express.Router();
 router.get('/', listVehicles);
 router.get('/available/search', getAvailableVehicles);
 router.get('/:id', getVehicle);
-router.post('/', authenticate, authorize(['admin']), createVehicle);
-router.put('/:id', authenticate, authorize(['admin']), updateVehicle);
+router.post('/', authenticate, authorize(['admin', 'gestor']), createVehicle);
+router.put('/:id', authenticate, authorize(['admin', 'gestor']), updateVehicle);
 router.delete('/:id', authenticate, authorize(['admin']), deleteVehicle);
-router.patch('/:id/status', authenticate, authorize(['admin']), changeVehicleStatus);
+router.patch('/:id/status', authenticate, authorize(['admin', 'gestor']), changeVehicleStatus);
 
 module.exports = router;

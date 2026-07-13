@@ -1,45 +1,23 @@
-﻿import { Button } from 'react-bootstrap';
+import { Button } from 'react-bootstrap';
+import { useLocation } from 'react-router-dom';
+
+const PAGE_TITLES = {
+  '/gestor': ['Dashboard', 'Visão geral da operação'],
+  '/gestor/frota': ['Frota', 'Gestão das viaturas'],
+  '/gestor/reservas': ['Reservas', 'Gestão das reservas'],
+  '/gestor/manutencao': ['Manutenção', 'Alertas e indisponibilidades'],
+  '/gestor/clientes': ['Clientes', 'Gestão dos clientes'],
+  '/gestor/relatorios': ['Relatórios', 'Análise da operação'],
+  '/gestor/apoio': ['Apoio', 'Pedidos dos clientes'],
+  '/gestor/avaliacoes': ['Avaliações', 'Moderação e respostas'],
+};
 
 function GestorTopBar({ onToggleSidebar }) {
-  const monthYear = new Date().toLocaleDateString('pt-PT', {
-    month: 'long',
-    year: 'numeric',
-  });
-
-  const subtitle = `Visão geral da operação · ${monthYear.charAt(0).toUpperCase()}${monthYear.slice(1)}`;
-
-  return (
-    <header className="rc-topbar">
-      <div className="d-flex align-items-start gap-3">
-        <Button
-          type="button"
-          variant="link"
-          className="rc-topbar-menu d-lg-none"
-          aria-label="Abrir menu lateral"
-          onClick={onToggleSidebar}
-        >
-          <i className="bi bi-list" aria-hidden="true" />
-        </Button>
-
-        <div>
-          <h1 className="rc-topbar-title">DASHBOARD</h1>
-          <p className="rc-topbar-subtitle">{subtitle}</p>
-        </div>
-      </div>
-
-      <div className="rc-topbar-actions">
-        <Button type="button" className="rc-btn-secondary-action">
-          <i className="bi bi-plus" aria-hidden="true" />
-          <span>Nova Viatura</span>
-        </Button>
-
-        <Button type="button" className="rc-btn-primary-action">
-          <i className="bi bi-plus" aria-hidden="true" />
-          <span>Nova Reserva</span>
-        </Button>
-      </div>
-    </header>
-  );
+  const { pathname } = useLocation();
+  const monthYear = new Date().toLocaleDateString('pt-PT', { month: 'long', year: 'numeric' });
+  const pageKey = Object.keys(PAGE_TITLES).sort((a, b) => b.length - a.length).find((path) => pathname.startsWith(path)) || '/gestor';
+  const [title, description] = PAGE_TITLES[pageKey];
+  const subtitle = `${description} · ${monthYear.charAt(0).toUpperCase()}${monthYear.slice(1)}`;
+  return <header className="rc-topbar"><div className="d-flex align-items-start gap-3"><Button type="button" variant="link" className="rc-topbar-menu d-lg-none" aria-label="Abrir menu lateral" onClick={onToggleSidebar}><i className="bi bi-list" aria-hidden="true" /></Button><div><h1 className="rc-topbar-title">{title}</h1><p className="rc-topbar-subtitle">{subtitle}</p></div></div></header>;
 }
-
 export default GestorTopBar;

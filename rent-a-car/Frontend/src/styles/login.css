@@ -39,12 +39,25 @@ a {
   background: var(--rc-bg-dark);
 }
 
-.rc-hero-panel {
+.rc-hero-panel,
+.rc-register-hero-panel {
   min-height: 100vh;
+  background-image:
+    linear-gradient(180deg, rgba(8, 9, 11, 0.24) 0%, rgba(8, 9, 11, 0.48) 42%, rgba(8, 9, 11, 0.96) 100%),
+    url('/cars/Porsche%20Cayenne.jpg');
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
   position: relative;
+}
+
+.rc-hero-panel::after,
+.rc-register-hero-panel::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  box-shadow: inset -4rem 0 7rem rgba(0, 0, 0, 0.2);
 }
 
 .rc-hero-content {
@@ -53,6 +66,8 @@ a {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  position: relative;
+  z-index: 1;
 }
 
 .rc-logo {
@@ -86,6 +101,25 @@ a {
 
 .rc-hero-bottom {
   max-width: 28rem;
+  padding-bottom: 0.25rem;
+}
+
+.rc-hero-eyebrow {
+  width: fit-content;
+  margin-bottom: 1rem;
+  padding: 0.42rem 0.68rem;
+  border: 1px solid rgba(245, 184, 28, 0.38);
+  border-radius: 999px;
+  background: rgba(12, 12, 14, 0.56);
+  color: #f7d473;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.42rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  backdrop-filter: blur(8px);
 }
 
 .rc-hero-title {
@@ -94,6 +128,7 @@ a {
   font-weight: 800;
   text-transform: uppercase;
   margin: 0;
+  text-shadow: 0 2px 22px rgba(0, 0, 0, 0.65);
 }
 
 .rc-hero-title span {
@@ -132,8 +167,45 @@ a {
 
 .rc-right-panel {
   min-height: 100vh;
-  background: var(--rc-panel-dark);
+  background:
+    radial-gradient(circle at 80% 15%, rgba(245, 184, 28, 0.055), transparent 30%),
+    var(--rc-panel-dark);
+  border-left: 1px solid rgba(255, 255, 255, 0.04);
   padding: 2rem 1.25rem;
+}
+
+.rc-auth-form-shell {
+  width: 100%;
+  max-width: 26.25rem;
+}
+
+.rc-auth-form-shell-register {
+  max-width: 28.75rem;
+}
+
+.rc-auth-back-link.btn {
+  min-height: 2.6rem;
+  margin-bottom: 1.4rem;
+  padding: 0.55rem 0.85rem;
+  border: 1px solid var(--rc-input-border);
+  border-radius: 0.65rem;
+  background: rgba(255, 255, 255, 0.015);
+  color: #d9d9dd;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.rc-auth-back-link.btn:hover,
+.rc-auth-back-link.btn:focus {
+  border-color: rgba(245, 184, 28, 0.55);
+  background: rgba(245, 184, 28, 0.06);
+  color: var(--rc-yellow);
+  transform: translateX(-2px);
 }
 
 .rc-form-wrapper {
@@ -190,8 +262,8 @@ a {
 
 .rc-auth-input.form-control,
 .rc-auth-input.form-control:focus {
-  height: 3rem;
-  border-radius: 0.5rem;
+  height: 3.2rem;
+  border-radius: 0.7rem;
   border: 1px solid var(--rc-input-border);
   background-color: var(--rc-input-bg);
   color: var(--rc-text-primary);
@@ -267,9 +339,9 @@ a {
 
 .rc-primary-btn.btn {
   width: 100%;
-  min-height: 3rem;
+  min-height: 3.2rem;
   border: 0;
-  border-radius: 0.5rem;
+  border-radius: 0.7rem;
   background: var(--rc-yellow);
   color: #0f0f0f;
   font-size: 0.78rem;
@@ -370,10 +442,22 @@ a {
 
 @media (max-width: 991.98px) {
   .rc-right-panel {
-    padding: 2rem 1rem;
+    padding: 2rem 1.25rem;
   }
 
-  .rc-form-wrapper {
+  .rc-form-wrapper,
+  .rc-auth-form-shell {
     max-width: 30rem;
+  }
+}
+
+@media (max-height: 760px) and (min-width: 992px) {
+  .rc-hero-content,
+  .rc-register-hero-content {
+    padding-block: 1.6rem;
+  }
+
+  .rc-auth-back-link.btn {
+    margin-bottom: 1rem;
   }
 }

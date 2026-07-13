@@ -134,12 +134,13 @@ function CheckoutPage() {
         vehicleId: Number(vehicleId),
         data_inicio: dates.pickup,
         data_fim: dates.return,
+        pickupLocation: dates.location,
         extras,
       };
 
       const response = await bookingService.create(payload);
       const reservationId = response?.data?.id || response?.id;
-      navigate(`/minhas-reservas?reservation=${reservationId}`);
+      navigate(`/cliente/minhas-reservas?reservation=${reservationId}`);
     } catch (err) {
       setError(err.response?.data?.message || 'Não foi possível criar a reserva.');
     } finally {

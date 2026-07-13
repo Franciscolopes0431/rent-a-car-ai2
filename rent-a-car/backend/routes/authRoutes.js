@@ -7,6 +7,8 @@ const {
   appleAuth,
   updateProfile,
   updatePassword,
+  getProfile,
+  logout,
 } = require('../controllers/authController');
 const { authenticate } = require('../middleware/authMiddleware');
 
@@ -19,5 +21,7 @@ router.post('/google', googleAuth);
 router.post('/apple', appleAuth);
 router.put('/me', authenticate, updateProfile);
 router.put('/password', authenticate, updatePassword);
+router.get('/me', authenticate, getProfile);
+router.post('/logout', logout);
 
 module.exports = router;

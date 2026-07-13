@@ -48,6 +48,7 @@ function GestorBookingDetailDrawer({ booking, onHide, onUpdated }) {
                 <strong>Período</strong>
                 <div>{new Date(detail?.startDate || booking.startDate).toLocaleDateString('pt-PT')} – {new Date(detail?.endDate || booking.endDate).toLocaleDateString('pt-PT')}</div>
               </ListGroup.Item>
+              <ListGroup.Item><strong>Local de levantamento</strong><div>{detail?.pickupLocation || 'Não indicado'}</div></ListGroup.Item>
               <ListGroup.Item>
                 <strong>Total</strong>
                 <div>{detail ? new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR' }).format(detail.totalPrice) : '-'}</div>

@@ -4,25 +4,35 @@ import { Link } from 'react-router-dom';
 import LandingNavbar from '../../components/landing/LandingNavbar';
 import LandingFooter from '../../components/landing/LandingFooter';
 import '../../styles/public-pages.css';
+import * as featureService from '../../services/customerFeatureService';
 
 function ContactPage() {
   const [formData, setFormData] = useState({ name: '', email: '', phone: '', subject: '', message: '' });
   const [validated, setValidated] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [ticketReference, setTicketReference] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
     const form = event.currentTarget;
     if (form.checkValidity() === false) {
       event.stopPropagation();
     } else {
-      // Simulate sending data
-      setSubmitted(true);
-      setTimeout(() => {
-        setSubmitted(false);
+      setIsSubmitting(true);
+      setSubmitError('');
+      try {
+        const response = await featureService.createPublicTicket(formData);
+        setTicketReference(response.data.reference);
+        setSubmitted(true);
         setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
         setValidated(false);
-      }, 3000);
+      } catch (error) {
+        setSubmitError(error.response?.data?.message || 'Não foi possível enviar a mensagem. Tente novamente.');
+      } finally {
+        setIsSubmitting(false);
+      }
     }
     setValidated(true);
   };
@@ -51,10 +61,12 @@ function ContactPage() {
               <h3 className="fw-bold mb-4">Envie-nos uma Mensagem</h3>
               {submitted ? (
                 <div className="alert alert-success">
-                  <i className="bi bi-check-circle-fill me-2"></i>A sua mensagem foi enviada com sucesso! Iremos responder em breve.
+                  <i className="bi bi-check-circle-fill me-2"></i>A sua mensagem foi registada com a referência <strong>{ticketReference}</strong>. Iremos responder através do email indicado.
+                  <div className="mt-3"><Button variant="outline-success" size="sm" onClick={() => { setSubmitted(false); setTicketReference(''); }}>Enviar outra mensagem</Button></div>
                 </div>
               ) : (
                 <Form noValidate validated={validated} onSubmit={handleSubmit}>
+                  {submitError ? <div className="alert alert-danger" role="alert">{submitError}</div> : null}
                   <Row>
                     <Col md={6}>
                       <Form.Group className="mb-3" controlId="contactName">
@@ -91,8 +103,8 @@ function ContactPage() {
                     <Form.Control required as="textarea" rows={5} name="message" value={formData.message} onChange={handleChange} placeholder="Como podemos ajudar?" />
                     <Form.Control.Feedback type="invalid">Por favor, escreva a sua mensagem.</Form.Control.Feedback>
                   </Form.Group>
-                  <Button type="submit" className="w-100 py-2 rc-btn-primary fw-bold">
-                    Enviar Mensagem
+                  <Button type="submit" className="w-100 py-2 rc-btn-primary fw-bold" disabled={isSubmitting}>
+                    {isSubmitting ? 'A enviar...' : 'Enviar Mensagem'}
                   </Button>
                 </Form>
               )}

@@ -161,7 +161,7 @@ function MyBookingsPage() {
                     </Row>
 
                     <div className="d-flex gap-2 mt-auto">
-                      <Button variant="outline-primary" className="flex-grow-1" as={Link} to={`/frota/${booking.vehicleId || booking.vehicle_id}`}>
+                      <Button variant="outline-primary" className="flex-grow-1" as={Link} to={`/cliente/frota/${booking.vehicleId || booking.vehicle_id}`}>
                         Ver Veículo
                       </Button>
                       {(booking.estado || booking.status) === 'pendente' ? <Button variant="outline-warning" className="flex-grow-1" onClick={() => handleEditClick(booking)}>

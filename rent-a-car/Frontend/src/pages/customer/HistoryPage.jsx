@@ -53,9 +53,9 @@ function HistoryPage() {
                       <small className="text-secondary">até {new Date(`${booking.data_fim}T00:00:00`).toLocaleDateString('pt-PT')}</small>
                     </td>
                     <td>{new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR' }).format(Number(booking.preco_estimado || 0))}</td>
-                    <td><StatusBadge status={booking.estado || booking.status} /></td>
+                    <td><StatusBadge status={booking.lifecycleStatus || booking.estado || booking.status} /></td>
                     <td className="text-end">
-                      <Button as={Link} to={`/frota/${booking.vehicleId}`} variant="outline-primary" size="sm" title="Reservar novamente">
+                      <Button as={Link} to={`/cliente/frota/${booking.vehicleId}`} variant="outline-primary" size="sm" title="Reservar novamente">
                         <i className="bi bi-arrow-repeat me-1"></i>Repetir
                       </Button>
                     </td>

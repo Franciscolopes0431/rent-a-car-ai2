@@ -6,11 +6,12 @@ import * as vehicleService from '../../services/vehicleService';
 const STATUS_OPTIONS = [
   { value: 'pendente', label: 'Pendente' },
   { value: 'confirmada', label: 'Confirmada' },
+  { value: 'concluida', label: 'Concluída' },
   { value: 'cancelada', label: 'Cancelada' },
 ];
 
 function BookingFormModal({ show, booking, onHide, onSaved }) {
-  const [formData, setFormData] = useState({ customerId: '', vehicleId: '', startDate: '', endDate: '', status: 'pendente' });
+  const [formData, setFormData] = useState({ customerId: '', vehicleId: '', startDate: '', endDate: '', status: 'pendente', pickupLocation: 'Lisboa - Aeroporto' });
   const [errors, setErrors] = useState({});
   const [customers, setCustomers] = useState([]);
   const [vehicles, setVehicles] = useState([]);
@@ -29,9 +30,10 @@ function BookingFormModal({ show, booking, onHide, onSaved }) {
         startDate: booking.startDate || '',
         endDate: booking.endDate || '',
         status: booking.estado || booking.status || 'pendente',
+        pickupLocation: booking.pickupLocation || 'Lisboa - Aeroporto',
       });
     } else {
-      setFormData({ customerId: '', vehicleId: '', startDate: '', endDate: '', status: 'pendente' });
+      setFormData({ customerId: '', vehicleId: '', startDate: '', endDate: '', status: 'pendente', pickupLocation: 'Lisboa - Aeroporto' });
     }
     setErrors({});
   }, [booking, show]);
@@ -67,6 +69,7 @@ function BookingFormModal({ show, booking, onHide, onSaved }) {
     if (!formData.vehicleId) payloadErrors.vehicleId = 'O veículo é obrigatório.';
     if (!formData.startDate) payloadErrors.startDate = 'A data de início é obrigatória.';
     if (!formData.endDate) payloadErrors.endDate = 'A data de fim é obrigatória.';
+    if (!formData.pickupLocation) payloadErrors.pickupLocation = 'O local de levantamento é obrigatório.';
     if (formData.startDate && formData.endDate && formData.startDate >= formData.endDate) payloadErrors.endDate = 'A data de fim deve ser posterior à data de início.';
     setErrors(payloadErrors);
     return Object.keys(payloadErrors).length === 0;
@@ -84,6 +87,7 @@ function BookingFormModal({ show, booking, onHide, onSaved }) {
         data_inicio: formData.startDate,
         data_fim: formData.endDate,
         estado: formData.status,
+        pickupLocation: formData.pickupLocation,
       };
       if (booking) {
         await bookingService.update(booking.id, payload);
@@ -192,10 +196,19 @@ function BookingFormModal({ show, booking, onHide, onSaved }) {
                 </Form.Group>
               </Col>
               <Col md={6}>
+                <Form.Group controlId="pickupLocation">
+                  <Form.Label>Local de levantamento</Form.Label>
+                  <Form.Select value={formData.pickupLocation} onChange={(event) => setFormData({ ...formData, pickupLocation: event.target.value })} isInvalid={!!errors.pickupLocation}>
+                    <option value="Lisboa - Aeroporto">Lisboa — Aeroporto</option><option value="Porto - Aeroporto">Porto — Aeroporto</option><option value="Faro - Aeroporto">Faro — Aeroporto</option>
+                  </Form.Select>
+                  <Form.Control.Feedback type="invalid">{errors.pickupLocation}</Form.Control.Feedback>
+                </Form.Group>
+              </Col>
+              <Col md={6}>
                 <Form.Group controlId="status">
                   <Form.Label>Estado</Form.Label>
                   <Form.Select value={formData.status} onChange={(event) => setFormData({ ...formData, status: event.target.value })}>
-                    {STATUS_OPTIONS.filter((option) => booking || option.value !== 'cancelada').map((option) => (
+                    {STATUS_OPTIONS.filter((option) => booking || !['cancelada', 'concluida'].includes(option.value)).map((option) => (
                       <option key={option.value} value={option.value}>{option.label}</option>
                     ))}
                   </Form.Select>

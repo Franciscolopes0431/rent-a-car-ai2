@@ -86,19 +86,16 @@ function GestorDashboardPage() {
 
       <Row className="g-3 mb-4">
         <Col xl={8}>
-          <RecentBookingsTable bookings={recentBookings} isLoading={isLoading} basePath="/gestor" />
+          <div className="rc-dashboard-stack rc-dashboard-stack-main">
+            <RecentBookingsTable bookings={recentBookings} isLoading={isLoading} basePath="/gestor" />
+            <AlertsPanel alerts={alerts} isLoading={isLoading} basePath="/gestor" />
+          </div>
         </Col>
         <Col xl={4}>
-          <FleetStatusPanel fleet={fleet} isLoading={isLoading} basePath="/gestor" />
-        </Col>
-      </Row>
-
-      <Row className="g-3">
-        <Col xl={7}>
-          <AlertsPanel alerts={alerts} isLoading={isLoading} />
-        </Col>
-        <Col xl={5}>
-          <QuickAccessPanel isLoading={isLoading} basePath="/gestor" />
+          <div className="rc-dashboard-stack">
+            <FleetStatusPanel fleet={fleet} isLoading={isLoading} basePath="/gestor" />
+            <QuickAccessPanel isLoading={isLoading} basePath="/gestor" />
+          </div>
         </Col>
       </Row>
 

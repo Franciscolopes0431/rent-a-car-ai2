@@ -1,5 +1,4 @@
 import Logo from '../common/Logo';
-import heroImage from '../../assets/images/bmw-hero.jpg';
 
 const BENEFITS = [
   'Reservas em menos de 2 minutos',
@@ -10,26 +9,22 @@ const BENEFITS = [
 
 function RegisterHeroPanel() {
   return (
-    <section
-      className="rc-register-hero-panel"
-      style={{
-        backgroundImage:
-          `linear-gradient(180deg, rgba(0, 0, 0, 0.30) 0%, rgba(0, 0, 0, 0.90) 100%), url(${heroImage})`,
-      }}
-    >
+    <section className="rc-register-hero-panel">
       <div className="rc-register-hero-content">
         <Logo />
 
         <div className="rc-register-hero-bottom">
+          <span className="rc-hero-eyebrow">
+            <i className="bi bi-stars" aria-hidden="true" /> Comece hoje
+          </span>
           <h1 className="rc-register-hero-title">
-            JUNTE-SE A
+            JUNTE-SE À
             <br />
-            NOSSA <span>FROTA.</span>
+            <span>RENTCAR.</span>
           </h1>
 
           <p className="rc-register-hero-subtitle">
-            Crie a sua conta e tenha acesso imediato a mais de 500 veículos premium. Rápido,
-            simples e seguro.
+            Crie a sua conta gratuitamente e reserve a viatura ideal de forma rápida, simples e segura.
           </p>
 
           <ul className="rc-register-benefits" aria-label="Benefícios da RentCar">

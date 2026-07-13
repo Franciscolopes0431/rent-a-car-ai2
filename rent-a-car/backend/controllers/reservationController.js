@@ -1,11 +1,34 @@
 const { Op } = require('sequelize');
 const bcrypt = require('bcryptjs');
-const { Reservation, Vehicle, User, Unavailability } = require('../models');
+const { Reservation, Vehicle, User, Unavailability, sequelize } = require('../models');
 const {
   normalizeDateRange,
   calculateDaysBetween,
   buildOverlapWhere,
 } = require('../utils/dateHelpers');
+const { notify } = require('../services/notificationService');
+const { getSetting } = require('../services/settingService');
+
+async function completeExpiredReservations() {
+  const today = new Date().toISOString().slice(0, 10);
+  const expired = await Reservation.findAll({ where: { estado: 'confirmada', data_fim: { [Op.lt]: today } }, attributes: ['id', 'userId'] });
+  if (!expired.length) return;
+  await Reservation.update({ estado: 'concluida' }, { where: { id: { [Op.in]: expired.map((item) => item.id) } } });
+  await Promise.all(expired.map((reservation) => notify({
+    userId: reservation.userId,
+    type: 'reserva_concluida',
+    title: 'Reserva concluída',
+    message: `A reserva #${reservation.id} foi concluída. Já pode avaliar a experiência.`,
+    link: '/cliente/avaliacoes',
+    eventKey: `reservation-completed:${reservation.id}`,
+  })));
+}
+
+function httpError(status, message) {
+  const error = new Error(message);
+  error.status = status;
+  return error;
+}
 
 function toReservationResponse(reservation) {
   if (!reservation) return null;
@@ -13,6 +36,7 @@ function toReservationResponse(reservation) {
   const userName = reservation.user?.nome || '';
   const [firstName, ...lastNameParts] = userName.split(' ');
 
+  const lifecycleStatus = reservation.estado === 'concluida' ? 'concluída' : reservation.estado;
   return {
     id: reservation.id,
     reference: reservation.reference || `RES-${String(reservation.id).padStart(4, '0')}`,
@@ -21,8 +45,10 @@ function toReservationResponse(reservation) {
     data_inicio: reservation.data_inicio,
     data_fim: reservation.data_fim,
     estado: reservation.estado,
+    lifecycleStatus,
     preco_estimado: reservation.preco_estimado,
     extras: reservation.extras || {},
+    pickupLocation: reservation.pickupLocation || null,
     status: reservation.estado,
     startDate: reservation.data_inicio,
     endDate: reservation.data_fim,
@@ -59,7 +85,7 @@ function isAdminOrGestor(user) {
 
 async function createReservation(req, res, next) {
   try {
-    const { vehicleId, data_inicio, data_fim, estado, extras = {} } = req.body;
+    const { vehicleId, data_inicio, data_fim, estado, extras = {}, pickupLocation } = req.body;
 
     if (!vehicleId || !data_inicio || !data_fim) {
       return res.status(400).json({
@@ -96,13 +122,19 @@ async function createReservation(req, res, next) {
       return res.status(404).json({ message: 'Veiculo nao encontrado.' });
     }
 
-    if (vehicle.status !== 'Disponível') {
+    if (vehicle.status === 'Manutenção') {
       return res.status(409).json({
         message: 'O veiculo esta inativo e nao pode ser reservado.',
       });
     }
 
     const { inicio, fim } = normalizeDateRange(data_inicio, data_fim);
+    const transaction = await sequelize.transaction();
+    try {
+      await sequelize.query('SELECT pg_advisory_xact_lock(:vehicleId)', {
+        replacements: { vehicleId: Number(vehicleId) },
+        transaction,
+      });
 
     const overlappingReservation = await Reservation.findOne({
       where: {
@@ -110,9 +142,11 @@ async function createReservation(req, res, next) {
         estado: { [Op.ne]: 'cancelada' },
         ...buildOverlapWhere(inicio, fim),
       },
+      transaction,
     });
 
     if (overlappingReservation) {
+      await transaction.rollback();
       return res.status(409).json({
         message: 'Ja existe uma reserva que sobrepoe este intervalo.',
       });
@@ -123,9 +157,11 @@ async function createReservation(req, res, next) {
         vehicleId,
         ...buildOverlapWhere(inicio, fim),
       },
+      transaction,
     });
 
     if (overlappingUnavailability) {
+      await transaction.rollback();
       return res.status(409).json({
         message: 'O veiculo esta indisponivel neste intervalo.',
       });
@@ -143,10 +179,19 @@ async function createReservation(req, res, next) {
       data_fim,
       estado: initialStatus,
       extras: safeExtras,
+      pickupLocation: pickupLocation ? String(pickupLocation).trim().slice(0, 160) : null,
       preco_estimado,
-    });
+    }, { transaction });
+
+    await transaction.commit();
+
+    await notify({ userId, type: 'reserva_criada', title: 'Reserva criada', message: `A reserva ${reservation.reference || `#${reservation.id}`} foi criada.`, link: '/cliente/minhas-reservas' });
 
     return res.status(201).json(toReservationResponse(reservation));
+    } catch (transactionError) {
+      if (!transaction.finished) await transaction.rollback();
+      throw transactionError;
+    }
   } catch (error) {
     return next(error);
   }
@@ -154,6 +199,7 @@ async function createReservation(req, res, next) {
 
 async function listReservations(req, res, next) {
   try {
+    await completeExpiredReservations();
     const accessWhere = isAdminOrGestor(req.user) ? {} : { userId: req.user.id };
     const where = { ...accessWhere };
     const page = Math.max(1, Number(req.query.page || 1));
@@ -163,7 +209,7 @@ async function listReservations(req, res, next) {
     if (history === 'true') {
       where[Op.or] = [
         { estado: 'cancelada' },
-        { estado: 'confirmada', data_fim: { [Op.lt]: new Date().toISOString().slice(0, 10) } },
+        { estado: 'concluida' },
       ];
     } else if (status) where.estado = status;
     if (from) where.data_fim = { [Op.gte]: from };
@@ -200,11 +246,29 @@ async function listReservations(req, res, next) {
       where: accessWhere,
       group: ['estado'],
     });
-    const summary = { total: 0, pendente: 0, confirmada: 0, cancelada: 0 };
+    const summary = { total: 0, pendente: 0, confirmada: 0, concluida: 0, cancelada: 0 };
     statusCounts.forEach((entry) => {
       summary[entry.estado] = Number(entry.count);
       summary.total += Number(entry.count);
     });
+
+    if (!isAdminOrGestor(req.user)) {
+      const today = new Date().toISOString().slice(0, 10);
+      const completed = await Reservation.findAll({
+        where: { ...accessWhere, estado: 'concluida' },
+        attributes: ['data_inicio', 'data_fim', 'preco_estimado'],
+      });
+      summary.finished = completed.length;
+      summary.rentalDays = completed.reduce((total, item) => {
+        const start = new Date(`${item.data_inicio}T00:00:00Z`);
+        const end = new Date(`${item.data_fim}T00:00:00Z`);
+        return total + Math.max(1, Math.ceil((end - start) / 86400000));
+      }, 0);
+      summary.spent = completed.reduce((total, item) => total + Number(item.preco_estimado || 0), 0);
+      summary.active = await Reservation.count({
+        where: { ...accessWhere, estado: { [Op.ne]: 'cancelada' }, data_fim: { [Op.gte]: today } },
+      });
+    }
 
     return res.json({
       data: rows.map(toReservationResponse),
@@ -223,6 +287,7 @@ async function listReservations(req, res, next) {
 
 async function getReservation(req, res, next) {
   try {
+    await completeExpiredReservations();
     const reservation = await Reservation.findByPk(req.params.id, {
       include: [
         { model: User, as: 'user' },
@@ -246,75 +311,43 @@ async function getReservation(req, res, next) {
 
 async function updateReservation(req, res, next) {
   try {
-    const reservation = await Reservation.findByPk(req.params.id);
+    const reservation = await sequelize.transaction(async (transaction) => {
+      const current = await Reservation.findByPk(req.params.id, { transaction });
+      if (!current) throw httpError(404, 'Reserva não encontrada.');
+      if (!isAdminOrGestor(req.user) && current.userId !== req.user.id) throw httpError(403, 'Sem acesso a esta reserva.');
 
-    if (!reservation) {
-      return res.status(404).json({ message: 'Reserva nao encontrada.' });
-    }
-
-    if (!isAdminOrGestor(req.user) && reservation.userId !== req.user.id) {
-      return res.status(403).json({ message: 'Forbidden' });
-    }
-
-    const { data_inicio, data_fim, vehicleId, estado, extras } = req.body;
-    const nextVehicleId = vehicleId || reservation.vehicleId;
-    const nextStart = data_inicio || reservation.data_inicio;
-    const nextEnd = data_fim || reservation.data_fim;
-
-    const { inicio, fim } = normalizeDateRange(nextStart, nextEnd);
-
-    const vehicle = await Vehicle.findByPk(nextVehicleId);
-    if (!vehicle) {
-      return res.status(404).json({ message: 'Veiculo nao encontrado.' });
-    }
-
-    const overlappingReservation = await Reservation.findOne({
-      where: {
-        id: { [Op.ne]: reservation.id },
-        vehicleId: nextVehicleId,
-        estado: { [Op.ne]: 'cancelada' },
-        ...buildOverlapWhere(inicio, fim),
-      },
-    });
-
-    if (overlappingReservation) {
-      return res.status(409).json({ message: 'Ja existe uma reserva que sobrepoe este intervalo.' });
-    }
-
-    const overlappingUnavailability = await Unavailability.findOne({
-      where: {
-        vehicleId: nextVehicleId,
-        ...buildOverlapWhere(inicio, fim),
-      },
-    });
-
-    if (overlappingUnavailability) {
-      return res.status(409).json({ message: 'O veiculo esta indisponivel neste intervalo.' });
-    }
-
-    const days = calculateDaysBetween(inicio, fim);
-    const nextExtras = extras || reservation.extras || {};
-    const safeExtras = { gps: nextExtras.gps === true, insurance: nextExtras.insurance === true, childSeat: Math.min(3, Math.max(0, Number(nextExtras.childSeat) || 0)) };
-    const extrasPerDay = (safeExtras.gps ? 10 : 0) + (safeExtras.insurance ? 25 : 0) + (safeExtras.childSeat * 5);
-    const preco_estimado = (Number(vehicle.pricePerDay) + extrasPerDay) * days;
-
-    if (estado !== undefined) {
-      if (!isAdminOrGestor(req.user)) {
-        return res.status(403).json({ message: 'Apenas administradores e gestores podem alterar o estado.' });
+      const { data_inicio, data_fim, vehicleId, estado, extras, pickupLocation } = req.body;
+      const nextVehicleId = Number(vehicleId || current.vehicleId);
+      const nextStart = data_inicio || current.data_inicio;
+      const nextEnd = data_fim || current.data_fim;
+      const today = new Date().toISOString().slice(0, 10);
+      if (!isAdminOrGestor(req.user) && (current.estado !== 'pendente' || current.data_inicio <= today || nextStart < today)) {
+        throw httpError(409, 'Já não é possível alterar esta reserva.');
       }
-      if (!['pendente', 'confirmada', 'cancelada'].includes(estado)) {
-        return res.status(400).json({ message: 'Estado de reserva inválido.' });
+      if (estado !== undefined && (!isAdminOrGestor(req.user) || !['pendente', 'confirmada', 'concluida', 'cancelada'].includes(estado))) {
+        throw httpError(isAdminOrGestor(req.user) ? 400 : 403, 'Estado de reserva inválido.');
       }
-    }
 
-    reservation.data_inicio = nextStart;
-    reservation.data_fim = nextEnd;
-    reservation.vehicleId = nextVehicleId;
-    reservation.preco_estimado = preco_estimado;
-    reservation.extras = safeExtras;
-    if (estado !== undefined) reservation.estado = estado;
-    await reservation.save();
+      const { inicio, fim } = normalizeDateRange(nextStart, nextEnd);
+      const lockIds = [...new Set([Number(current.vehicleId), nextVehicleId])].sort((a, b) => a - b);
+      for (const vehicleLockId of lockIds) await sequelize.query('SELECT pg_advisory_xact_lock(:vehicleId)', { replacements: { vehicleId: vehicleLockId }, transaction });
+      const vehicle = await Vehicle.findByPk(nextVehicleId, { transaction });
+      if (!vehicle) throw httpError(404, 'Veículo não encontrado.');
+      const conflict = await Reservation.findOne({ where: { id: { [Op.ne]: current.id }, vehicleId: nextVehicleId, estado: { [Op.ne]: 'cancelada' }, ...buildOverlapWhere(inicio, fim) }, transaction });
+      if (conflict) throw httpError(409, 'Já existe uma reserva que sobrepõe este intervalo.');
+      const unavailable = await Unavailability.findOne({ where: { vehicleId: nextVehicleId, ...buildOverlapWhere(inicio, fim) }, transaction });
+      if (unavailable) throw httpError(409, 'O veículo está indisponível neste intervalo.');
 
+      const nextExtras = extras || current.extras || {};
+      const safeExtras = { gps: nextExtras.gps === true, insurance: nextExtras.insurance === true, childSeat: Math.min(3, Math.max(0, Number(nextExtras.childSeat) || 0)) };
+      const extrasPerDay = (safeExtras.gps ? 10 : 0) + (safeExtras.insurance ? 25 : 0) + (safeExtras.childSeat * 5);
+      Object.assign(current, { data_inicio: nextStart, data_fim: nextEnd, vehicleId: nextVehicleId, preco_estimado: (Number(vehicle.pricePerDay) + extrasPerDay) * calculateDaysBetween(inicio, fim), extras: safeExtras });
+      if (pickupLocation !== undefined) current.pickupLocation = String(pickupLocation).trim().slice(0, 160) || null;
+      if (estado !== undefined) current.estado = estado;
+      await current.save({ transaction });
+      return current;
+    });
+    await notify({ userId: reservation.userId, type: 'reserva_alterada', title: 'Reserva alterada', message: `A reserva ${reservation.reference || `#${reservation.id}`} foi atualizada.`, link: '/cliente/minhas-reservas' });
     return res.json(toReservationResponse(reservation));
   } catch (error) {
     return next(error);
@@ -375,8 +408,20 @@ async function cancelReservation(req, res, next) {
       return res.status(409).json({ message: 'A reserva ja se encontra cancelada.' });
     }
 
+    if (!isAdminOrGestor(req.user)) {
+      const cancellationHours = Number(await getSetting('cancellationHours', 48));
+      const cutoff = new Date();
+      cutoff.setHours(cutoff.getHours() + cancellationHours);
+      const pickupDate = new Date(`${reservation.data_inicio}T00:00:00`);
+      if (pickupDate < cutoff) {
+        return res.status(409).json({ message: `O cancelamento deve ser feito com pelo menos ${cancellationHours} horas de antecedência.` });
+      }
+    }
+
     reservation.estado = 'cancelada';
     await reservation.save();
+
+    await notify({ userId: reservation.userId, type: 'reserva_cancelada', title: 'Reserva cancelada', message: `A reserva ${reservation.reference || `#${reservation.id}`} foi cancelada.`, link: '/cliente/historico' });
 
     return res.json(toReservationResponse(reservation));
   } catch (error) {
@@ -393,10 +438,10 @@ async function updateReservationStatus(req, res, next) {
       return res.status(400).json({ message: 'O campo estado e obrigatorio.' });
     }
 
-    const allowedStates = ['pendente', 'confirmada', 'cancelada'];
+    const allowedStates = ['pendente', 'confirmada', 'concluida', 'cancelada'];
     if (!allowedStates.includes(estado)) {
       return res.status(400).json({
-        message: 'Estado invalido. Use pendente, confirmada ou cancelada.',
+        message: 'Estado inválido. Use pendente, confirmada, concluida ou cancelada.',
       });
     }
 
@@ -445,6 +490,8 @@ async function updateReservationStatus(req, res, next) {
 
     reservation.estado = estado;
     await reservation.save();
+
+    await notify({ userId: reservation.userId, type: 'estado_reserva', title: 'Estado da reserva atualizado', message: `A reserva ${reservation.reference || `#${reservation.id}`} está agora ${estado === 'concluida' ? 'concluída' : estado}.`, link: estado === 'concluida' || estado === 'cancelada' ? '/cliente/historico' : '/cliente/minhas-reservas' });
 
     return res.json(toReservationResponse(reservation));
   } catch (error) {

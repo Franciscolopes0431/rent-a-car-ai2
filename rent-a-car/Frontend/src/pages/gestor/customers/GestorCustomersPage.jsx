@@ -4,18 +4,14 @@ import PageHeader from '../../../components/common/PageHeader';
 import SearchBar from '../../../components/common/SearchBar';
 import DataTable from '../../../components/common/DataTable';
 import Pagination from '../../../components/common/Pagination';
-import ConfirmDialog from '../../../components/common/ConfirmDialog';
 import EmptyState from '../../../components/common/EmptyState';
 import GestorCustomerFormModal from './GestorCustomerFormModal';
 import { useCustomers } from '../../../hooks/useCustomers';
-import * as customerService from '../../../services/customerService';
 
 function GestorCustomersPage() {
   const { customers, pagination, search, setSearch, setPagination, isLoading, error, refetch } = useCustomers();
   const [showForm, setShowForm] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState(null);
-  const [deleteTarget, setDeleteTarget] = useState(null);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const actions = [
     {
@@ -41,22 +37,12 @@ function GestorCustomersPage() {
         render: (customer) => (
           <div className="d-flex gap-2">
             <Button variant="link" className="text-secondary p-0" onClick={(e) => { e.stopPropagation(); setEditingCustomer(customer); setShowForm(true); }}><i className="bi bi-pencil" /></Button>
-            <Button variant="link" className="text-danger p-0" onClick={(e) => { e.stopPropagation(); setDeleteTarget(customer); setShowDeleteConfirm(true); }}><i className="bi bi-trash" /></Button>
           </div>
         ),
       },
     ],
     []
   );
-
-  const handleDeleteConfirmed = async () => {
-    if (deleteTarget) {
-      await customerService.remove(deleteTarget.id);
-      setShowDeleteConfirm(false);
-      setDeleteTarget(null);
-      refetch();
-    }
-  };
 
   return (
     <div>
@@ -103,13 +89,6 @@ function GestorCustomersPage() {
         onSaved={() => { setShowForm(false); setEditingCustomer(null); refetch(); }}
       />
 
-      <ConfirmDialog
-        show={showDeleteConfirm}
-        title="Eliminar cliente"
-        message={`Tem a certeza que deseja eliminar ${deleteTarget?.firstName} ${deleteTarget?.lastName}?`}
-        onCancel={() => setShowDeleteConfirm(false)}
-        onConfirm={handleDeleteConfirmed}
-      />
     </div>
   );
 }

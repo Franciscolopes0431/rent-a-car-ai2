@@ -77,18 +77,13 @@ function LoginForm() {
 
     try {
       const response = await authService.login(formData);
-      const token = response?.token;
-
-      if (!token) {
-        throw new Error('Token não recebido do servidor.');
-      }
-
-      login({ token, user: response?.user || null });
+      if (!response?.user) throw new Error('Dados da conta não recebidos do servidor.');
+      login({ user: response.user, rememberMe: formData.rememberMe });
       // Role-aware redirect
       const role = response.user?.role;
-      if (role === 'admin') navigate('/admin');
-      else if (role === 'gestor') navigate('/gestor');
-      else navigate('/cliente');
+      if (role === 'admin') navigate('/admin', { replace: true });
+      else if (role === 'gestor') navigate('/gestor', { replace: true });
+      else navigate('/cliente', { replace: true });
     } catch (error) {
       const message = error?.response?.data?.message || error?.message || 'Não foi possível entrar na conta.';
       setApiError(message);
@@ -113,7 +108,7 @@ function LoginForm() {
       ) : null}
 
       <Form onSubmit={handleSubmit} noValidate>
-        <Form.Group className="mb-3" controlId="email">
+        <Form.Group className="mb-3">
           <Form.Label className="rc-input-label">EMAIL</Form.Label>
           <Form.Control
             id="email"
@@ -135,7 +130,7 @@ function LoginForm() {
           ) : null}
         </Form.Group>
 
-        <Form.Group className="mb-3" controlId="password">
+        <Form.Group className="mb-3">
           <div className="d-flex align-items-center justify-content-between mb-2">
             <Form.Label className="rc-input-label mb-0">PALAVRA-PASSE</Form.Label>
           </div>

@@ -2,7 +2,7 @@ const { Op } = require('sequelize');
 const { Vehicle, Reservation, MaintenanceAlert } = require('../models');
 
 const ACTIVE_STATUSES = ['confirmada'];
-const REVENUE_STATUSES = ['confirmada'];
+const REVENUE_STATUSES = ['confirmada', 'concluida'];
 
 function startOfDay(date) {
   const value = new Date(date);
@@ -38,6 +38,7 @@ function normalizeStatusValue(value) {
     2: 'cancelada',
     pendente: 'pendente',
     confirmada: 'confirmada',
+    concluida: 'concluida',
     cancelada: 'cancelada',
   };
 
@@ -49,8 +50,11 @@ async function getStats() {
   const currentMonthStart = startOfMonth(now);
   const previousMonthStart = startOfPreviousMonth(now);
   const previousMonthEnd = endOfPreviousMonth(now);
-  const todayStart = startOfDay(now);
-  const todayEnd = endOfDay(now);
+  const today = now.toISOString().slice(0, 10);
+  const currentMonthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().slice(0, 10);
+  const previousMonthStartDate = previousMonthStart.toISOString().slice(0, 10);
+  const previousMonthEndDate = previousMonthEnd.toISOString().slice(0, 10);
+
 
   try {
     const [
@@ -64,24 +68,24 @@ async function getStats() {
     ] = await Promise.all([
       Vehicle.count(),
       Vehicle.count({ where: { createdAt: { [Op.gte]: currentMonthStart } } }),
-      Reservation.count({ where: { estado: { [Op.in]: ACTIVE_STATUSES } } }),
+      Reservation.count({ where: { estado: { [Op.in]: ACTIVE_STATUSES }, data_fim: { [Op.gte]: today } } }),
       Reservation.count({ where: { estado: 'pendente' } }),
       Reservation.count({
         where: {
           estado: { [Op.in]: ACTIVE_STATUSES },
-          data_fim: { [Op.between]: [todayStart, todayEnd] },
+          data_fim: today,
         },
       }),
       Reservation.sum('preco_estimado', {
         where: {
           estado: { [Op.in]: REVENUE_STATUSES },
-          createdAt: { [Op.gte]: currentMonthStart },
+          data_inicio: { [Op.between]: [currentMonthStart.toISOString().slice(0, 10), currentMonthEnd] },
         },
       }),
       Reservation.sum('preco_estimado', {
         where: {
           estado: { [Op.in]: REVENUE_STATUSES },
-          createdAt: { [Op.between]: [previousMonthStart, previousMonthEnd] },
+          data_inicio: { [Op.between]: [previousMonthStartDate, previousMonthEndDate] },
         },
       }),
     ]);

@@ -1,16 +1,19 @@
 import { useState } from 'react';
 import { Alert, Button, Col, Container, Form, Modal, Row } from 'react-bootstrap';
 import EmptyState from '../../components/common/EmptyState';
+import { useAuth } from '../../hooks/useAuth';
 
 const STORAGE_KEY = 'rentcarPaymentMethods';
-const readMethods = () => { try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch { return []; } };
+const readMethods = (key) => { try { return JSON.parse(localStorage.getItem(key)) || []; } catch { return []; } };
 
 function PaymentMethodsPage() {
-  const [methods, setMethods] = useState(readMethods);
+  const { user } = useAuth();
+  const storageKey = `${STORAGE_KEY}:${user?.id || 'anonymous'}`;
+  const [methods, setMethods] = useState(() => readMethods(storageKey));
   const [show, setShow] = useState(false);
   const [card, setCard] = useState({ holder: '', number: '', expiry: '' });
   const [message, setMessage] = useState('');
-  const persist = (next) => { setMethods(next); localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); };
+  const persist = (next) => { setMethods(next); localStorage.setItem(storageKey, JSON.stringify(next)); };
   const addCard = (event) => { event.preventDefault(); const digits = card.number.replace(/\D/g, ''); if (digits.length < 12) return; const next = [...methods, { id: Date.now(), type: digits.startsWith('4') ? 'Visa' : 'Mastercard', last4: digits.slice(-4), expiry: card.expiry, holder: card.holder, isDefault: methods.length === 0 }]; persist(next); setCard({ holder: '', number: '', expiry: '' }); setShow(false); setMessage('Cartão adicionado com sucesso.'); };
   const setDefault = (id) => persist(methods.map((method) => ({ ...method, isDefault: method.id === id })));
   const remove = (id) => { const remaining = methods.filter((method) => method.id !== id); if (remaining.length && !remaining.some((method) => method.isDefault)) remaining[0].isDefault = true; persist(remaining); };

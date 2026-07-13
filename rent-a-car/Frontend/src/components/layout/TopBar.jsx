@@ -8,6 +8,8 @@ const PAGE_TITLES = {
   '/admin/manutencao': ['Manutenção', 'Alertas e indisponibilidades'],
   '/admin/clientes': ['Clientes', 'Gestão dos clientes'],
   '/admin/relatorios': ['Relatórios', 'Análise da operação'],
+  '/admin/apoio': ['Apoio', 'Pedidos dos clientes'],
+  '/admin/avaliacoes': ['Avaliações', 'Moderação e respostas'],
 };
 
 function TopBar({ onToggleSidebar }) {

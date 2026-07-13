@@ -1,6 +1,8 @@
-import { Container, Row, Col, Card, Form, Button, Accordion } from 'react-bootstrap';
-import { useState } from 'react';
+import { Container, Row, Col, Form, Button, Accordion, Alert } from 'react-bootstrap';
+import { useEffect, useState } from 'react';
 import { useBookings } from '../../hooks/useBookings';
+import * as featureService from '../../services/customerFeatureService';
+import TicketConversationModal from '../../components/support/TicketConversationModal';
 
 function SupportPage() {
   const { bookings } = useBookings();
@@ -11,14 +13,25 @@ function SupportPage() {
   });
 
   const [ticketReference, setTicketReference] = useState('');
+  const [tickets, setTickets] = useState([]);
+  const [error, setError] = useState('');
+  const [selectedTicket, setSelectedTicket] = useState(null);
 
-  const handleSubmit = (e) => {
+  const loadTickets = async () => {
+    try { setTickets((await featureService.listTickets()).data); }
+    catch (requestError) { setError(requestError.response?.data?.message || 'Não foi possível carregar os pedidos.'); }
+  };
+  useEffect(() => { loadTickets(); }, []);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const ticket = { id: `SUP-${Date.now().toString().slice(-6)}`, ...formData, createdAt: new Date().toISOString(), status: 'recebido' };
-    const existing = JSON.parse(localStorage.getItem('rentcarSupportTickets') || '[]');
-    localStorage.setItem('rentcarSupportTickets', JSON.stringify([ticket, ...existing]));
-    setTicketReference(ticket.id);
-    setFormData({ subject: '', bookingId: '', message: '' });
+    try {
+      const response = await featureService.createTicket({ ...formData, reservationId: formData.bookingId || null });
+      setTicketReference(response.data.reference);
+      setFormData({ subject: '', bookingId: '', message: '' });
+      setError('');
+      await loadTickets();
+    } catch (requestError) { setError(requestError.response?.data?.message || 'Não foi possível enviar o pedido.'); }
   };
 
   return (
@@ -30,6 +43,7 @@ function SupportPage() {
           <div className="rc-card mb-4">
             <h4 className="h5 text-white border-bottom border-secondary pb-3 mb-4">Enviar Mensagem</h4>
             
+            {error ? <Alert variant="danger">{error}</Alert> : null}
             {ticketReference && (
               <div className="alert alert-success">
                 Pedido registado com a referência <strong>{ticketReference}</strong>. Guarde-a para acompanhamento.
@@ -95,6 +109,7 @@ function SupportPage() {
               </div>
             </Form>
           </div>
+          {tickets.length ? <div className="rc-card"><h2 className="h5 mb-3">Os meus pedidos</h2>{tickets.map((ticket) => <div key={ticket.id} className="d-flex justify-content-between align-items-center gap-3 border-top border-secondary py-3"><div><strong>{ticket.subject}</strong><div className="text-secondary small">SUP-{String(ticket.id).padStart(6, '0')} · {ticket.status.replace('_', ' ')}</div></div><Button variant="outline-warning" size="sm" onClick={() => setSelectedTicket(ticket)}>Ver conversa</Button></div>)}</div> : null}
         </Col>
 
         <Col lg={5}>
@@ -135,6 +150,7 @@ function SupportPage() {
           </div>
         </Col>
       </Row>
+      <TicketConversationModal ticket={selectedTicket} onHide={() => setSelectedTicket(null)} onUpdated={loadTickets} />
     </Container>
   );
 }

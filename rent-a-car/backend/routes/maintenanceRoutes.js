@@ -16,6 +16,6 @@ router.get('/:id', authenticate, authorize(['admin', 'gestor']), getMaintenance)
 router.post('/', authenticate, authorize(['admin', 'gestor']), createMaintenance);
 router.put('/:id', authenticate, authorize(['admin', 'gestor']), updateMaintenance);
 router.patch('/:id/resolve', authenticate, authorize(['admin', 'gestor']), resolveMaintenance);
-router.delete('/:id', authenticate, authorize(['admin', 'gestor']), deleteMaintenance);
+router.delete('/:id', authenticate, authorize(['admin']), deleteMaintenance);
 
 module.exports = router;

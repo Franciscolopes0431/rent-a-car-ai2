@@ -5,9 +5,13 @@ require('dotenv').config({
 });
 
 const { sequelize, User } = require('../models');
+const bcrypt = require('bcryptjs');
 
 async function run() {
   try {
+    const adminPassword = process.env.ADMIN_INITIAL_PASSWORD;
+    if (!adminPassword || adminPassword.length < 12) throw new Error('Defina ADMIN_INITIAL_PASSWORD com pelo menos 12 caracteres.');
+    const password = await bcrypt.hash(adminPassword, 10);
     await sequelize.authenticate();
     await sequelize.sync();
 
@@ -16,7 +20,7 @@ async function run() {
       defaults: {
         nome: 'Administrador',
         email: 'admin@rentcar.pt',
-        password: 'admin123',
+        password,
         tipo: 'admin',
       },
     });
@@ -24,14 +28,13 @@ async function run() {
     if (!created) {
       await user.update({
         nome: 'Administrador',
-        password: 'admin123',
+        password,
         tipo: 'admin',
       });
     }
 
     console.log(created ? 'Conta admin criada com sucesso.' : 'Conta admin atualizada com sucesso.');
     console.log('Email: admin@rentcar.pt');
-    console.log('Password: admin123');
   } catch (error) {
     console.error('Erro ao criar conta admin:', error.message);
     process.exitCode = 1;

@@ -24,7 +24,7 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
       },
       estado: {
-        type: DataTypes.ENUM('pendente', 'confirmada', 'cancelada'),
+        type: DataTypes.ENUM('pendente', 'confirmada', 'concluida', 'cancelada'),
         allowNull: false,
         defaultValue: 'pendente',
       },
@@ -37,6 +37,11 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.JSONB,
         allowNull: false,
         defaultValue: {},
+      },
+      pickupLocation: {
+        type: DataTypes.STRING(160),
+        allowNull: true,
+        field: 'pickup_location',
       },
     },
     {

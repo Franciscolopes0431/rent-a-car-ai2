@@ -36,7 +36,7 @@ function toPublicUser(user) {
 
 async function login(req, res, next) {
   try {
-    const { email, password } = req.body;
+    const { email, password, rememberMe = false } = req.body;
 
     if (!email || !password) {
       return res.status(400).json({
@@ -58,9 +58,24 @@ async function login(req, res, next) {
     }
 
     const payload = { id: user.id, role: user.tipo, email: user.email, name: user.nome };
-    const token = jwt.sign(payload, getJwtSecret(), { expiresIn: '2h' });
+    const persistentSession = rememberMe === true;
+    const token = jwt.sign(payload, getJwtSecret(), {
+      expiresIn: persistentSession ? '30d' : '8h',
+    });
 
-    return res.json({ token, user: toPublicUser(user) });
+    const cookieOptions = {
+      httpOnly: true,
+      sameSite: 'strict',
+      secure: process.env.NODE_ENV === 'production',
+      path: '/',
+    };
+
+    if (persistentSession) {
+      cookieOptions.maxAge = 30 * 24 * 60 * 60 * 1000;
+    }
+
+    res.cookie('rentcar_session', token, cookieOptions);
+    return res.json({ user: toPublicUser(user) });
   } catch (error) {
     return next(error);
   }
@@ -171,6 +186,19 @@ async function updatePassword(req, res, next) {
   }
 }
 
+async function getProfile(req, res, next) {
+  try {
+    const user = await User.findByPk(req.user.id);
+    if (!user) return res.status(404).json({ message: 'Utilizador não encontrado.' });
+    return res.json(toPublicUser(user));
+  } catch (error) { return next(error); }
+}
+
+function logout(req, res) {
+  res.clearCookie('rentcar_session', { httpOnly: true, sameSite: 'strict', secure: process.env.NODE_ENV === 'production', path: '/' });
+  return res.status(204).send();
+}
+
 module.exports = {
   verifyPassword,
   login,
@@ -180,4 +208,6 @@ module.exports = {
   appleAuth,
   updateProfile,
   updatePassword,
+  getProfile,
+  logout,
 };

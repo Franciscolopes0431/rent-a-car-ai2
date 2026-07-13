@@ -109,9 +109,9 @@ function VehicleCatalogPage() {
                           <span className="badge bg-dark border border-secondary text-secondary">{vehicle.year}</span>
                         </div>
                         <div className="text-secondary small mb-4 d-flex flex-wrap gap-2">
-                          <span title="Lugares"><i className="bi bi-people me-1"></i>{vehicle.seats || 5}</span>
-                          <span title="Transmissão"><i className="bi bi-gear me-1"></i>Manual</span>
-                          <span title="Combustível"><i className="bi bi-fuel-pump me-1"></i>Gasolina</span>
+                          <span title="Lugares"><i className="bi bi-people me-1"></i>{vehicle.seats ? `${vehicle.seats} lugares` : 'Lugares não indicados'}</span>
+                          <span title="Transmissão"><i className="bi bi-gear me-1"></i>{vehicle.transmission || 'Não indicada'}</span>
+                          <span title="Combustível"><i className="bi bi-fuel-pump me-1"></i>{vehicle.fuel || 'Não indicado'}</span>
                         </div>
                         <div className="mt-auto d-flex justify-content-between align-items-center border-top border-secondary pt-3">
                           <div className="rc-vehicle-price">

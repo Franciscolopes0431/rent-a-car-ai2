@@ -36,6 +36,12 @@ import ClientDashboardPage from './pages/customer/ClientDashboardPage';
 import NewReservationPage from './pages/customer/NewReservationPage';
 import ReservationDetailsPage from './pages/reservations/ReservationDetailsPage';
 import LegalPage from './pages/public/LegalPage';
+import SupportManagementPage from './pages/support/SupportManagementPage';
+import ReviewManagementPage from './pages/reviews/ReviewManagementPage';
+import NotificationsPage from './pages/customer/NotificationsPage';
+import StaffManagementPage from './pages/admin/StaffManagementPage';
+import SettingsPage from './pages/admin/SettingsPage';
+import AuditLogPage from './pages/admin/AuditLogPage';
 
 function App() {
   return (
@@ -74,6 +80,7 @@ function App() {
           <Route path="/cliente/historico" element={<HistoryPage />} />
           <Route path="/cliente/avaliacoes" element={<ReviewsPage />} />
           <Route path="/cliente/suporte" element={<SupportPage />} />
+          <Route path="/cliente/notificacoes" element={<NotificationsPage />} />
         </Route>
       </Route>
 
@@ -94,6 +101,11 @@ function App() {
           <Route path="/admin/manutencao" element={<MaintenancePage />} />
           <Route path="/admin/clientes" element={<CustomersPage />} />
           <Route path="/admin/relatorios" element={<ReportsPage />} />
+          <Route path="/admin/apoio" element={<SupportManagementPage />} />
+          <Route path="/admin/avaliacoes" element={<ReviewManagementPage />} />
+          <Route path="/admin/equipa" element={<StaffManagementPage />} />
+          <Route path="/admin/auditoria" element={<AuditLogPage />} />
+          <Route path="/admin/configuracoes" element={<SettingsPage />} />
         </Route>
       </Route>
 
@@ -107,6 +119,8 @@ function App() {
           <Route path="/gestor/manutencao" element={<GestorMaintenancePage />} />
           <Route path="/gestor/clientes" element={<GestorCustomersPage />} />
           <Route path="/gestor/relatorios" element={<GestorReportsPage />} />
+          <Route path="/gestor/apoio" element={<SupportManagementPage />} />
+          <Route path="/gestor/avaliacoes" element={<ReviewManagementPage />} />
         </Route>
       </Route>
 

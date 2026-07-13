@@ -8,6 +8,8 @@ import './styles/register.css';
 import './styles/dashboard.css';
 import './styles/customer.css';
 import './styles/landing.css';
+import './styles/public-pages.css';
+import './styles/components.css';
 import App from './App';
 import { AuthProvider } from './context/AuthContext';
 

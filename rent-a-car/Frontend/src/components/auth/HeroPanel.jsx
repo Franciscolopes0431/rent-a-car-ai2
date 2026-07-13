@@ -1,39 +1,40 @@
 import { Col } from 'react-bootstrap';
 import Logo from '../common/Logo';
-import heroImage from '../../assets/images/bugatti-hero.jpg';
 
 function HeroPanel() {
   return (
     <Col lg={6} className="d-none d-lg-block p-0">
       <section
         className="rc-hero-panel"
-        style={{ backgroundImage: `linear-gradient(180deg, rgba(0, 0, 0, 0.35) 0%, rgba(0, 0, 0, 0.85) 100%), url(${heroImage})` }}
       >
         <div className="rc-hero-content">
           <Logo />
 
           <div className="rc-hero-bottom">
+            <span className="rc-hero-eyebrow">
+              <i className="bi bi-shield-check" aria-hidden="true" /> Aluguer simples e seguro
+            </span>
             <h1 className="rc-hero-title">
-              DRIVE YOUR
+              A SUA VIAGEM
               <br />
-              <span>ADVENTURE.</span>
+              <span>COMEÇA AQUI.</span>
             </h1>
             <p className="rc-hero-subtitle">
-              Premium vehicles for every journey. Reserve your perfect car in minutes and hit the road with confidence.
+              Encontre a viatura certa, reserve em poucos minutos e viaje com toda a confiança.
             </p>
 
-            <div className="rc-hero-stats" role="list" aria-label="Estatísticas RentCar">
+            <div className="rc-hero-stats" role="list" aria-label="Vantagens RentCar">
               <div role="listitem">
-                <strong>500+</strong>
-                <span>Veículos disponíveis</span>
+                <strong>20+</strong>
+                <span>Viaturas na frota</span>
               </div>
               <div role="listitem">
-                <strong>48h</strong>
-                <span>Suporte ao cliente</span>
+                <strong>2 min</strong>
+                <span>Reserva rápida</span>
               </div>
               <div role="listitem">
-                <strong>4.9★</strong>
-                <span>Avaliação média</span>
+                <strong>24/7</strong>
+                <span>Acesso à sua conta</span>
               </div>
             </div>
           </div>

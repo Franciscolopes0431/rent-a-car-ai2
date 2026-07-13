@@ -1,8 +1,22 @@
 import { Container, Nav, Navbar } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../hooks/useAuth';
 import Logo from '../common/Logo';
 
 function LandingNavbar() {
+  const { isAuthenticated, user, logout } = useAuth();
+  const navigate = useNavigate();
+  const dashboardPath = user?.role === 'admin'
+    ? '/admin'
+    : user?.role === 'gestor'
+      ? '/gestor'
+      : '/cliente';
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
+
   return (
     <Navbar expand="lg" className="rc-landing-navbar" variant="dark">
       <Container>
@@ -17,10 +31,24 @@ function LandingNavbar() {
             <Nav.Link as={Link} to="/contactos">Contactos</Nav.Link>
           </Nav>
           <Nav>
-            <Nav.Link as={Link} to="/login">Entrar</Nav.Link>
-            <Nav.Link as={Link} to="/registo" className="btn rc-btn-primary-action ms-2 text-white">
-              Registar
-            </Nav.Link>
+            {isAuthenticated ? (
+              <>
+                <Nav.Link as="button" type="button" onClick={handleLogout} className="rc-landing-logout-link">
+                  Terminar sessão
+                </Nav.Link>
+                <Nav.Link as={Link} to={dashboardPath} className="btn rc-btn-primary-action ms-lg-2 text-white">
+                  <i className="bi bi-speedometer2 me-2" aria-hidden="true" />
+                  Voltar ao painel
+                </Nav.Link>
+              </>
+            ) : (
+              <>
+                <Nav.Link as={Link} to="/login">Entrar</Nav.Link>
+                <Nav.Link as={Link} to="/registo" className="btn rc-btn-primary-action ms-lg-2 text-white">
+                  Registar
+                </Nav.Link>
+              </>
+            )}
           </Nav>
         </Navbar.Collapse>
       </Container>

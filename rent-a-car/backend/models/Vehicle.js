@@ -43,6 +43,10 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: true,
         field: 'image_url',
       },
+      year: { type: DataTypes.INTEGER, allowNull: true },
+      seats: { type: DataTypes.INTEGER, allowNull: true, validate: { min: 1, max: 9 } },
+      transmission: { type: DataTypes.STRING(30), allowNull: true },
+      fuel: { type: DataTypes.STRING(30), allowNull: true },
     },
     {
       tableName: 'vehicles',

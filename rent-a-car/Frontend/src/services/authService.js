@@ -27,6 +27,8 @@ const authService = {
 
   updateProfile: async (payload) => (await axiosClient.put('/auth/me', payload)).data,
   updatePassword: async (payload) => (await axiosClient.put('/auth/password', payload)).data,
+  getProfile: async () => (await axiosClient.get('/auth/me')).data,
+  logout: async () => axiosClient.post('/auth/logout'),
 
   googleAuth: async () => {
     const response = await axiosClient.post('/auth/google');

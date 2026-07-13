@@ -6,12 +6,10 @@ import FilterChips from '../../../components/common/FilterChips';
 import DataTable from '../../../components/common/DataTable';
 import Pagination from '../../../components/common/Pagination';
 import StatusBadge from '../../../components/common/StatusBadge';
-import ConfirmDialog from '../../../components/common/ConfirmDialog';
 import EmptyState from '../../../components/common/EmptyState';
 import GestorVehicleFormModal from './GestorVehicleFormModal';
 import GestorVehicleDetailDrawer from './GestorVehicleDetailDrawer';
 import { useFleet } from '../../../hooks/useFleet';
-import * as vehicleService from '../../../services/vehicleService';
 
 const categoryOptions = [
   { label: 'Todas as categorias', value: '' },
@@ -27,8 +25,6 @@ function GestorFleetPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingVehicle, setEditingVehicle] = useState(null);
   const [selectedVehicle, setSelectedVehicle] = useState(null);
-  const [deleteTarget, setDeleteTarget] = useState(null);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const totalCount = pagination.total || vehicles.length;
 
@@ -80,22 +76,12 @@ function GestorFleetPage() {
           <div className="d-flex align-items-center gap-2">
             <Button variant="link" className="text-secondary p-0" onClick={(e) => { e.stopPropagation(); setSelectedVehicle(vehicle); }}><i className="bi bi-eye" /></Button>
             <Button variant="link" className="text-secondary p-0" onClick={(e) => { e.stopPropagation(); setEditingVehicle(vehicle); setShowForm(true); }}><i className="bi bi-pencil" /></Button>
-            <Button variant="link" className="text-danger p-0" onClick={(e) => { e.stopPropagation(); setDeleteTarget(vehicle); setShowDeleteConfirm(true); }}><i className="bi bi-trash" /></Button>
           </div>
         ),
       },
     ],
     []
   );
-
-  const handleDeleteConfirmed = async () => {
-    if (deleteTarget) {
-      await vehicleService.remove(deleteTarget.id);
-      setShowDeleteConfirm(false);
-      setDeleteTarget(null);
-      refetch();
-    }
-  };
 
   return (
     <div>
@@ -157,13 +143,6 @@ function GestorFleetPage() {
         onUpdated={() => refetch()}
       />
 
-      <ConfirmDialog
-        show={showDeleteConfirm}
-        title="Eliminar viatura"
-        message={`Tem a certeza que deseja eliminar ${deleteTarget?.brand} ${deleteTarget?.model}?`}
-        onCancel={() => setShowDeleteConfirm(false)}
-        onConfirm={handleDeleteConfirmed}
-      />
     </div>
   );
 }

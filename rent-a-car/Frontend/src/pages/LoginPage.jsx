@@ -1,7 +1,6 @@
-import { Col, Container, Row } from 'react-bootstrap';
+import { Button, Col, Container, Row } from 'react-bootstrap';
 import HeroPanel from '../components/auth/HeroPanel';
 import LoginForm from '../components/auth/LoginForm';
-import { Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 
 function LoginPage() {
@@ -12,14 +11,12 @@ function LoginPage() {
           <HeroPanel />
 
           <Col lg={6} className="rc-right-panel d-flex align-items-center justify-content-center">
-                    <div style={{ width: '100%', maxWidth: '480px' }}>
-                      <div className="mb-3">
-                        <Button as={Link} to="/" variant="" className="rc-btn-secondary-action">
-                          ← Back to home
-                        </Button>
-                      </div>
-                      <LoginForm />
-                    </div>
+            <div className="rc-auth-form-shell">
+              <Button as={Link} to="/" variant="" className="rc-auth-back-link">
+                <i className="bi bi-arrow-left" aria-hidden="true" /> Voltar ao início
+              </Button>
+              <LoginForm />
+            </div>
           </Col>
         </Row>
       </Container>

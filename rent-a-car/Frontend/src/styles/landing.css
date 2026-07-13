@@ -9,6 +9,17 @@
   border-bottom: 1px solid var(--rc-border);
 }
 
+.rc-landing-logout-link.nav-link {
+  border: 0;
+  background: transparent;
+  color: var(--rc-text-secondary);
+}
+
+.rc-landing-logout-link.nav-link:hover,
+.rc-landing-logout-link.nav-link:focus {
+  color: var(--rc-text-primary);
+}
+
 .rc-landing-hero {
   position: relative;
   min-height: var(--rc-landing-hero-height);
@@ -49,4 +60,11 @@
 @media (max-width: 767px) {
   .rc-landing-hero-title { font-size: 1.6rem; }
   .rc-landing-hero { min-height: 380px; }
+}
+
+@media (max-width: 991.98px) {
+  .rc-landing-navbar .rc-btn-primary-action {
+    width: fit-content;
+    margin-top: 0.5rem;
+  }
 }

@@ -12,9 +12,11 @@ function getJwtSecret() {
 
 function authenticate(req, res, next) {
   const authHeader = req.headers.authorization || '';
-  const [scheme, token] = authHeader.split(' ');
+  const [scheme, bearerToken] = authHeader.split(' ');
+  const cookies = Object.fromEntries(String(req.headers.cookie || '').split(';').map((part) => part.trim().split('=').map(decodeURIComponent)).filter((part) => part.length === 2));
+  const token = scheme === 'Bearer' ? bearerToken : cookies.rentcar_session;
 
-  if (scheme !== 'Bearer' || !token) {
+  if (!token) {
     return res.status(401).json({ message: 'Not authenticated.' });
   }
 

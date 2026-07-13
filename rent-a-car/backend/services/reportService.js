@@ -1,183 +1,88 @@
-const { Op, fn, col, literal } = require('sequelize');
-const { sequelize, Booking, Vehicle, Customer } = require('../models');
+const { Op, fn, col } = require('sequelize');
+const { Reservation, Vehicle, User } = require('../models');
 
-function parseDate(value) {
-  return value ? new Date(value) : null;
+function dateOnly(value) {
+  return new Date(value).toISOString().slice(0, 10);
 }
 
 function buildPeriodRange({ from, to }) {
-  const start = parseDate(from) || new Date(0);
-  const end = parseDate(to) || new Date();
+  const now = new Date();
+  const start = from ? dateOnly(from) : `${now.getFullYear()}-01-01`;
+  const end = to ? dateOnly(to) : dateOnly(now);
   return [start, end];
 }
 
 async function revenueByPeriod({ from, to, groupBy = 'day' }) {
   const [start, end] = buildPeriodRange({ from, to });
   const dateFn = groupBy === 'month'
-    ? fn('date_trunc', 'month', col('created_at'))
-    : fn('date_trunc', 'day', col('created_at'));
-
-  return Booking.findAll({
-    attributes: [
-      [dateFn, 'period'],
-      [fn('SUM', col('total_price')), 'revenue'],
-      [fn('COUNT', col('id')), 'bookings'],
-    ],
-    where: {
-      status: { [Op.in]: ['confirmada'] },
-      createdAt: { [Op.between]: [start, end] },
-    },
-    group: ['period'],
-    order: [[col('period'), 'ASC']],
-    raw: true,
+    ? fn('date_trunc', 'month', col('data_inicio'))
+    : fn('date_trunc', 'day', col('data_inicio'));
+  return Reservation.findAll({
+    attributes: [[dateFn, 'period'], [fn('SUM', col('preco_estimado')), 'revenue'], [fn('COUNT', col('id')), 'bookings']],
+    where: { estado: { [Op.in]: ['confirmada', 'concluida'] }, data_inicio: { [Op.between]: [start, end] } },
+    group: ['period'], order: [[col('period'), 'ASC']], raw: true,
   });
 }
 
 async function bookingsByStatus({ from, to }) {
   const [start, end] = buildPeriodRange({ from, to });
-
-  return Booking.findAll({
-    attributes: [
-      'status',
-      [fn('COUNT', col('id')), 'count'],
-    ],
-    where: {
-      createdAt: { [Op.between]: [start, end] },
-    },
-    group: ['status'],
-    order: [[fn('COUNT', col('id')), 'DESC']],
-    raw: true,
-  });
+  return Reservation.findAll({
+    attributes: ['estado', [fn('COUNT', col('id')), 'count']],
+    where: { data_inicio: { [Op.between]: [start, end] } },
+    group: ['estado'], order: [[fn('COUNT', col('id')), 'DESC']], raw: true,
+  }).then((rows) => rows.map((row) => ({ status: row.estado, count: row.count })));
 }
 
 async function topVehicles({ limit = 5, from, to }) {
   const [start, end] = buildPeriodRange({ from, to });
-
-  const rows = await sequelize.query(
-    `
-      SELECT
-        b.vehicle_id AS "vehicleId",
-        COUNT(b.id) AS reservations,
-        COALESCE(SUM(b.total_price), 0) AS revenue,
-        v.brand,
-        v.model,
-        v.plate
-      FROM bookings AS b
-      LEFT JOIN vehicles AS v ON b.vehicle_id = v.id
-      WHERE b.created_at BETWEEN :start AND :end
-      GROUP BY b.vehicle_id, v.id, v.brand, v.model, v.plate
-      ORDER BY revenue DESC
-      LIMIT :limit
-    `,
-    {
-      replacements: {
-        start,
-        end,
-        limit: Number(limit),
-      },
-      type: sequelize.QueryTypes.SELECT,
-      raw: true,
-    }
-  );
-
+  const rows = await Reservation.findAll({
+    attributes: ['vehicleId', [fn('COUNT', col('Reservation.id')), 'reservations'], [fn('SUM', col('preco_estimado')), 'revenue']],
+    where: { estado: { [Op.in]: ['confirmada', 'concluida'] }, data_inicio: { [Op.between]: [start, end] } },
+    include: [{ model: Vehicle, as: 'vehicle', attributes: ['brand', 'model', 'plate'] }],
+    group: ['vehicleId', 'vehicle.id'], order: [[fn('SUM', col('preco_estimado')), 'DESC']], limit: Number(limit), subQuery: false,
+  });
   return rows.map((row) => ({
-    vehicle: `${row.brand || 'Veículo'} ${row.model || ''}`.trim(),
-    plate: row.plate || '-',
-    reservations: Number(row.reservations || 0),
-    revenue: Number(row.revenue || 0),
+    vehicle: `${row.vehicle?.brand || 'Viatura'} ${row.vehicle?.model || ''}`.trim(),
+    plate: row.vehicle?.plate || '-', reservations: Number(row.get('reservations') || 0), revenue: Number(row.get('revenue') || 0),
   }));
 }
 
 async function topCustomers({ limit = 5, from, to }) {
   const [start, end] = buildPeriodRange({ from, to });
-
-  const rows = await sequelize.query(
-    `
-      SELECT
-        b.customer_id AS "customerId",
-        COUNT(b.id) AS reservations,
-        COALESCE(SUM(b.total_price), 0) AS revenue,
-        c.first_name AS "firstName",
-        c.last_name AS "lastName",
-        c.email
-      FROM bookings AS b
-      LEFT JOIN customers AS c ON b.customer_id = c.id
-      WHERE b.created_at BETWEEN :start AND :end
-      GROUP BY b.customer_id, c.id, c.first_name, c.last_name, c.email
-      ORDER BY revenue DESC
-      LIMIT :limit
-    `,
-    {
-      replacements: {
-        start,
-        end,
-        limit: Number(limit),
-      },
-      type: sequelize.QueryTypes.SELECT,
-      raw: true,
-    }
-  );
-
+  const rows = await Reservation.findAll({
+    attributes: ['userId', [fn('COUNT', col('Reservation.id')), 'reservations'], [fn('SUM', col('preco_estimado')), 'revenue']],
+    where: { estado: { [Op.in]: ['confirmada', 'concluida'] }, data_inicio: { [Op.between]: [start, end] } },
+    include: [{ model: User, as: 'user', attributes: ['nome', 'email'] }],
+    group: ['userId', 'user.id'], order: [[fn('SUM', col('preco_estimado')), 'DESC']], limit: Number(limit), subQuery: false,
+  });
   return rows.map((row) => ({
-    customer: `${row.firstName || ''} ${row.lastName || ''}`.trim() || 'Cliente sem nome',
-    email: row.email || '-',
-    reservations: Number(row.reservations || 0),
-    revenue: Number(row.revenue || 0),
+    customer: row.user?.nome || 'Cliente sem nome', email: row.user?.email || '-',
+    reservations: Number(row.get('reservations') || 0), revenue: Number(row.get('revenue') || 0),
   }));
 }
 
 async function fleetUtilization({ from, to, limit = 10 }) {
   const [start, end] = buildPeriodRange({ from, to });
-  const periodDays = Math.max(1, Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1);
-
-  const bookings = await Booking.findAll({
+  const startDate = new Date(`${start}T00:00:00Z`);
+  const endDate = new Date(`${end}T00:00:00Z`);
+  const periodDays = Math.max(1, Math.ceil((endDate - startDate) / 86400000) + 1);
+  const reservations = await Reservation.findAll({
     where: {
-      status: { [Op.in]: ['confirmada'] },
-      [Op.and]: [
-        { startDate: { [Op.lte]: end } },
-        { endDate: { [Op.gte]: start } },
-      ],
+      estado: { [Op.in]: ['confirmada', 'concluida'] },
+      [Op.and]: [{ data_inicio: { [Op.lte]: end } }, { data_fim: { [Op.gte]: start } }],
     },
-    include: [{ model: Vehicle, as: 'vehicle', attributes: ['id', 'brand', 'model', 'plate'] }],
   });
-
-  const utilization = {};
-
-  bookings.forEach((booking) => {
-    if (!booking?.vehicle) {
-      return;
-    }
-
-    const intervalStart = new Date(Math.max(new Date(booking.startDate), start));
-    const intervalEnd = new Date(Math.min(new Date(booking.endDate), end));
-    const days = Math.max(1, Math.ceil((intervalEnd - intervalStart) / (1000 * 60 * 60 * 24)) + 1);
-    const vehicleKey = booking.vehicle.id;
-    utilization[vehicleKey] = (utilization[vehicleKey] || 0) + days;
+  const daysByVehicle = {};
+  reservations.forEach((reservation) => {
+    const intervalStart = new Date(`${reservation.data_inicio < start ? start : reservation.data_inicio}T00:00:00Z`);
+    const intervalEnd = new Date(`${reservation.data_fim > end ? end : reservation.data_fim}T00:00:00Z`);
+    daysByVehicle[reservation.vehicleId] = (daysByVehicle[reservation.vehicleId] || 0) + Math.max(1, Math.ceil((intervalEnd - intervalStart) / 86400000));
   });
-
-  const vehicles = await Vehicle.findAll({
-    attributes: ['id', 'brand', 'model', 'plate'],
-  });
-
-  return vehicles
-    .map((vehicle) => {
-      const bookedDays = utilization[vehicle.id] || 0;
-      return {
-        vehicle: `${vehicle.brand} ${vehicle.model}`,
-        plate: vehicle.plate,
-        utilization: Number(((bookedDays / periodDays) * 100).toFixed(1)),
-        bookedDays,
-        periodDays,
-      };
-    })
-    .sort((a, b) => b.utilization - a.utilization)
-    .slice(0, Number(limit));
+  const vehicles = await Vehicle.findAll({ attributes: ['id', 'brand', 'model', 'plate'] });
+  return vehicles.map((vehicle) => {
+    const bookedDays = Math.min(periodDays, daysByVehicle[vehicle.id] || 0);
+    return { vehicle: `${vehicle.brand} ${vehicle.model}`, plate: vehicle.plate, utilization: Number(((bookedDays / periodDays) * 100).toFixed(1)), bookedDays, periodDays };
+  }).sort((a, b) => b.utilization - a.utilization).slice(0, Number(limit));
 }
 
-module.exports = {
-  revenueByPeriod,
-  bookingsByStatus,
-  topVehicles,
-  topCustomers,
-  fleetUtilization,
-};
+module.exports = { revenueByPeriod, bookingsByStatus, topVehicles, topCustomers, fleetUtilization };

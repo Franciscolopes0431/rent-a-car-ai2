@@ -6,7 +6,8 @@ const CATEGORY_OPTIONS = ['Compacto', 'Berlina', 'SUV', 'Citadino', 'Desportivo'
 const STATUS_OPTIONS = ['Disponível', 'Reservado', 'Manutenção'];
 
 function VehicleFormModal({ show, vehicle, onHide, onSaved }) {
-  const [formData, setFormData] = useState({ plate: '', brand: '', model: '', category: 'Compacto', pricePerDay: '', status: 'Disponível' });
+  const emptyVehicle = { plate: '', brand: '', model: '', category: 'Compacto', pricePerDay: '', status: 'Disponível', year: '', seats: '', transmission: '', fuel: '' };
+  const [formData, setFormData] = useState(emptyVehicle);
   const [errors, setErrors] = useState({});
   const [isSaving, setIsSaving] = useState(false);
 
@@ -19,9 +20,10 @@ function VehicleFormModal({ show, vehicle, onHide, onSaved }) {
         category: vehicle.category || 'Compacto',
         pricePerDay: vehicle.pricePerDay || '',
         status: vehicle.status || 'Disponível',
+        year: vehicle.year || '', seats: vehicle.seats || '', transmission: vehicle.transmission || '', fuel: vehicle.fuel || '',
       });
     } else {
-      setFormData({ plate: '', brand: '', model: '', category: 'Compacto', pricePerDay: '', status: 'Disponível' });
+      setFormData(emptyVehicle);
     }
     setErrors({});
   }, [vehicle, show]);
@@ -52,6 +54,8 @@ function VehicleFormModal({ show, vehicle, onHide, onSaved }) {
         category: formData.category,
         pricePerDay: Number(formData.pricePerDay),
         status: formData.status,
+        year: formData.year ? Number(formData.year) : null, seats: formData.seats ? Number(formData.seats) : null,
+        transmission: formData.transmission || null, fuel: formData.fuel || null,
       };
 
       if (vehicle) {
@@ -148,6 +152,10 @@ function VehicleFormModal({ show, vehicle, onHide, onSaved }) {
                 </Form.Select>
               </Form.Group>
             </Col>
+            <Col md={6}><Form.Group controlId="year"><Form.Label>Ano</Form.Label><Form.Control type="number" min="1980" max={new Date().getFullYear() + 1} value={formData.year} onChange={(event) => setFormData({ ...formData, year: event.target.value })} /></Form.Group></Col>
+            <Col md={6}><Form.Group controlId="seats"><Form.Label>Lugares</Form.Label><Form.Control type="number" min="1" max="9" value={formData.seats} onChange={(event) => setFormData({ ...formData, seats: event.target.value })} /></Form.Group></Col>
+            <Col md={6}><Form.Group controlId="transmission"><Form.Label>Transmissão</Form.Label><Form.Select value={formData.transmission} onChange={(event) => setFormData({ ...formData, transmission: event.target.value })}><option value="">Não indicada</option><option>Manual</option><option>Automática</option></Form.Select></Form.Group></Col>
+            <Col md={6}><Form.Group controlId="fuel"><Form.Label>Combustível</Form.Label><Form.Select value={formData.fuel} onChange={(event) => setFormData({ ...formData, fuel: event.target.value })}><option value="">Não indicado</option><option>Gasolina</option><option>Diesel</option><option>Híbrido</option><option>Elétrico</option></Form.Select></Form.Group></Col>
           </Row>
         </Modal.Body>
         <Modal.Footer>

@@ -10,6 +10,7 @@ function StatusBadge({ status }) {
     confirmada: 'bg-primary',
     'em curso': 'bg-success',
     concluída: 'bg-secondary',
+    concluida: 'bg-secondary',
     cancelada: 'bg-danger',
     // legacy display values
     Pendente: 'bg-warning text-dark',

@@ -62,7 +62,19 @@ module.exports = {
         'Skoda': { 'Octavia': '/cars/Skoda Octavia.jpg' },
         'Toyota': { 'Corolla': '/cars/Toyota Corolla.jpg' },
         'Volkswagen': { 'Golf': '/cars/Volkswagen Golf.jpg' },
-        'Ford': { 'Focus': '/cars/ford focus.jpg' }
+        'Ford': { 'Focus': '/cars/ford focus.jpg' },
+        'Hyundai': { 'Tucson': '/cars/Hyundai tucson.jpg' },
+        'Opel': { 'Corsa': '/cars/Opel Corsa.jpg' },
+        'Kia': { 'Sportage': '/cars/Kia Sportage.jpg' },
+        'Volvo': { 'XC40': '/cars/Volvo XC40.jpg' },
+        'Fiat': { 'Panda': '/cars/Fiat Panda.jpg' },
+        'Porsche': { 'Cayenne': '/cars/Porsche Cayenne.jpg' },
+        'Mini': { 'Cooper': '/cars/Mini Cooper.jpg' },
+        'Dacia': { 'Duster': '/cars/Dacia Duster.jpg' },
+        'Lexus': { 'NX': '/cars/Lexus NX.jpg' },
+        'Mazda': { '3': '/cars/Mazda 3.jpg' },
+        'Alfa Romeo': { 'Giulia': '/cars/Alfa Romeo Giulia.jpg' },
+        'Honda': { 'Jazz': '/cars/Honda Jazz.jpg' }
       };
       
       return {

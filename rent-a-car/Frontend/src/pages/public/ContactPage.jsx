@@ -47,7 +47,7 @@ function ContactPage() {
         <Row className="gy-5 mb-5">
           {/* Formulário de Contacto */}
           <Col lg={7}>
-            <div className="rc-contact-card p-4 p-md-5 bg-white rounded shadow-sm h-100 border">
+            <div className="rc-contact-card p-4 p-md-5 bg-white text-dark rounded shadow-sm h-100 border">
               <h3 className="fw-bold mb-4">Envie-nos uma Mensagem</h3>
               {submitted ? (
                 <div className="alert alert-success">

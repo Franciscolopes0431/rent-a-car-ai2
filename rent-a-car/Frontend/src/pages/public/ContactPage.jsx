@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Container, Row, Col, Card, Form, Button, Accordion } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
+import LandingNavbar from '../../components/landing/LandingNavbar';
+import LandingFooter from '../../components/landing/LandingFooter';
 import '../../styles/public-pages.css';
 
 function ContactPage() {
@@ -29,6 +31,7 @@ function ContactPage() {
 
   return (
     <div className="rc-public-page">
+      <LandingNavbar />
       {/* Hero Section */}
       <section className="rc-hero-section contact-hero">
         <div className="rc-hero-overlay"></div>
@@ -99,56 +102,56 @@ function ContactPage() {
           {/* Informações de Contacto */}
           <Col lg={5}>
             <div className="d-flex flex-column h-100">
-              <Card className="border-0 shadow-sm mb-4 flex-grow-1 rc-info-card">
+              <Card className="border-0 shadow-sm mb-4 flex-grow-1 rc-info-card text-white">
                 <Card.Body className="p-4 p-md-5">
-                  <h4 className="fw-bold mb-4">Informações de Contacto</h4>
+                  <h4 className="fw-bold mb-4 text-white">Informações de Contacto</h4>
                   <ul className="list-unstyled mb-4 rc-contact-list">
                     <li className="d-flex mb-3 align-items-center">
-                      <div className="rc-icon-box bg-primary-subtle text-primary rounded-circle p-2 me-3">
+                      <div className="rc-icon-box bg-primary text-white rounded-circle p-2 me-3">
                         <i className="bi bi-geo-alt-fill"></i>
                       </div>
                       <div>
-                        <strong>Morada:</strong><br/>
-                        Rua da Liberdade, 123, 1000-123 Lisboa
+                        <strong className="text-white">Morada:</strong><br/>
+                        <span className="text-light">Rua da Liberdade, 123, 1000-123 Lisboa</span>
                       </div>
                     </li>
                     <li className="d-flex mb-3 align-items-center">
-                      <div className="rc-icon-box bg-primary-subtle text-primary rounded-circle p-2 me-3">
+                      <div className="rc-icon-box bg-primary text-white rounded-circle p-2 me-3">
                         <i className="bi bi-telephone-fill"></i>
                       </div>
                       <div>
-                        <strong>Telefone:</strong><br/>
-                        +351 210 000 000
+                        <strong className="text-white">Telefone:</strong><br/>
+                        <span className="text-light">+351 210 000 000</span>
                       </div>
                     </li>
                     <li className="d-flex mb-3 align-items-center">
-                      <div className="rc-icon-box bg-primary-subtle text-primary rounded-circle p-2 me-3">
+                      <div className="rc-icon-box bg-primary text-white rounded-circle p-2 me-3">
                         <i className="bi bi-envelope-fill"></i>
                       </div>
                       <div>
-                        <strong>Email:</strong><br/>
-                        geral@rentcar.pt
+                        <strong className="text-white">Email:</strong><br/>
+                        <span className="text-light">geral@rentcar.pt</span>
                       </div>
                     </li>
                     <li className="d-flex align-items-center">
-                      <div className="rc-icon-box bg-primary-subtle text-primary rounded-circle p-2 me-3">
+                      <div className="rc-icon-box bg-primary text-white rounded-circle p-2 me-3">
                         <i className="bi bi-clock-fill"></i>
                       </div>
                       <div>
-                        <strong>Horário:</strong><br/>
-                        Seg a Sex: 09:00 - 19:00<br/>Sáb e Dom: 10:00 - 15:00
+                        <strong className="text-white">Horário:</strong><br/>
+                        <span className="text-light">Seg a Sex: 09:00 - 19:00<br/>Sáb e Dom: 10:00 - 15:00</span>
                       </div>
                     </li>
                   </ul>
                   
-                  <hr className="my-4"/>
+                  <hr className="my-4 border-secondary"/>
                   
-                  <h5 className="fw-bold mb-3">Siga-nos nas Redes Sociais</h5>
+                  <h5 className="fw-bold mb-3 text-white">Siga-nos nas Redes Sociais</h5>
                   <div className="d-flex gap-3">
-                    <a href="#" className="rc-social-link bg-light text-primary rounded-circle d-flex align-items-center justify-content-center" style={{width:'40px', height:'40px'}}><i className="bi bi-facebook"></i></a>
-                    <a href="#" className="rc-social-link bg-light text-primary rounded-circle d-flex align-items-center justify-content-center" style={{width:'40px', height:'40px'}}><i className="bi bi-instagram"></i></a>
-                    <a href="#" className="rc-social-link bg-light text-primary rounded-circle d-flex align-items-center justify-content-center" style={{width:'40px', height:'40px'}}><i className="bi bi-twitter-x"></i></a>
-                    <a href="#" className="rc-social-link bg-light text-primary rounded-circle d-flex align-items-center justify-content-center" style={{width:'40px', height:'40px'}}><i className="bi bi-linkedin"></i></a>
+                    <a href="#" className="rc-social-link bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style={{width:'40px', height:'40px'}}><i className="bi bi-facebook"></i></a>
+                    <a href="#" className="rc-social-link bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style={{width:'40px', height:'40px'}}><i className="bi bi-instagram"></i></a>
+                    <a href="#" className="rc-social-link bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style={{width:'40px', height:'40px'}}><i className="bi bi-twitter-x"></i></a>
+                    <a href="#" className="rc-social-link bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style={{width:'40px', height:'40px'}}><i className="bi bi-linkedin"></i></a>
                   </div>
                 </Card.Body>
               </Card>
@@ -156,13 +159,18 @@ function ContactPage() {
           </Col>
         </Row>
 
-        {/* Mapa Placeholder */}
+        {/* Mapa */}
         <div className="mb-5 rounded overflow-hidden shadow-sm border" style={{ height: '350px', backgroundColor: '#e9ecef', position: 'relative' }}>
-          <div className="position-absolute top-50 start-50 translate-middle text-center text-muted">
-            <i className="bi bi-map fs-1 mb-2"></i>
-            <h5>Mapa de Localização</h5>
-            <p className="small">[ Integração com Google Maps ]</p>
-          </div>
+          <iframe 
+            src="https://maps.google.com/maps?q=Avenida%20da%20Liberdade,%20123,%20Lisboa&t=&z=15&ie=UTF8&iwloc=&output=embed" 
+            width="100%" 
+            height="100%" 
+            style={{ border: 0 }} 
+            allowFullScreen="" 
+            loading="lazy" 
+            referrerPolicy="no-referrer-when-downgrade"
+            title="Mapa de Localização"
+          ></iframe>
         </div>
 
         {/* FAQ Section */}
@@ -205,6 +213,7 @@ function ContactPage() {
           </Button>
         </div>
       </Container>
+      <LandingFooter />
     </div>
   );
 }

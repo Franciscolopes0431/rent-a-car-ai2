@@ -49,16 +49,34 @@ module.exports = {
       ['Honda', 'Jazz', 'HO-25-JZ', 'Citadino', 3.25, 'Disponível'],
     ];
 
-    const vehicleRows = vehicles.map((vehicle, index) => ({
-      brand: vehicle[0],
-      model: vehicle[1],
-      plate: vehicle[2],
-      category: vehicle[3],
-      price_per_day: vehicle[4],
-      status: vehicle[5],
-      created_at: index < 3 ? daysFromNow(-index - 1) : monthsAgo(1, -index),
-      updated_at: daysFromNow(-index),
-    }));
+    const vehicleRows = vehicles.map((vehicle, index) => {
+      const brand = vehicle[0];
+      const model = vehicle[1];
+      const images = {
+        'Audi': { 'A4': '/cars/AUDI A4.jpg' },
+        'BMW': { 'X3': '/cars/BMW X3.jpg' },
+        'Citroën': { 'C3': '/cars/Citroën C3.jpg' },
+        'Mercedes': { 'A180': '/cars/Mercedes A180.jpg' },
+        'Nissan': { 'Qashqai': '/cars/Nissan Qashqai.jpg' },
+        'Seat': { 'Leon': '/cars/Seat Leon.jpeg' },
+        'Skoda': { 'Octavia': '/cars/Skoda Octavia.jpg' },
+        'Toyota': { 'Corolla': '/cars/Toyota Corolla.jpg' },
+        'Volkswagen': { 'Golf': '/cars/Volkswagen Golf.jpg' },
+        'Ford': { 'Focus': '/cars/ford focus.jpg' }
+      };
+      
+      return {
+        brand: brand,
+        model: model,
+        plate: vehicle[2],
+        category: vehicle[3],
+        price_per_day: vehicle[4],
+        status: vehicle[5],
+        image_url: images[brand] ? images[brand][model] || null : null,
+        created_at: index < 3 ? daysFromNow(-index - 1) : monthsAgo(1, -index),
+        updated_at: daysFromNow(-index),
+      };
+    });
 
     await queryInterface.bulkInsert('vehicles', vehicleRows, {});
 

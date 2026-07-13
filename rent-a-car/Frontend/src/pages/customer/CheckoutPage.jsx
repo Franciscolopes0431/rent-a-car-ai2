@@ -328,7 +328,7 @@ function CheckoutPage() {
             <h4 className="h5 text-white border-bottom border-secondary pb-3 mb-3">Resumo da Reserva</h4>
             
             <div className="d-flex align-items-center mb-4">
-              <img src={vehicle.image_url} alt={vehicle.model} className="rounded me-3" style={{ width: '80px', height: '60px', objectFit: 'cover' }} />
+              <img src={vehicle.imageUrl} alt={vehicle.model} className="rounded me-3" style={{ width: '80px', height: '60px', objectFit: 'cover' }} />
               <div>
                 <h6 className="text-white mb-0">{vehicle.brand} {vehicle.model}</h6>
                 <small className="text-secondary">{vehicle.category}</small>

@@ -3,10 +3,14 @@ import { Link, useLocation } from 'react-router-dom';
 import { useFleet } from '../../hooks/useFleet';
 import Pagination from '../../components/common/Pagination';
 import EmptyState from '../../components/common/EmptyState';
+import LandingNavbar from '../../components/landing/LandingNavbar';
+import LandingFooter from '../../components/landing/LandingFooter';
 
 function VehicleCatalogPage() {
   const { pathname } = useLocation();
   const fleetBase = pathname.startsWith('/cliente') ? '/cliente/frota' : '/frota';
+  const isStandalonePublic = pathname === '/frota';
+  
   const { vehicles, pagination, filters, setFilters, setPagination, isLoading, error, categoryOptions } = useFleet();
 
   const handleFilterChange = (e) => {
@@ -18,8 +22,8 @@ function VehicleCatalogPage() {
     setPagination((prev) => ({ ...prev, page }));
   };
 
-  return (
-    <Container>
+  const content = (
+    <Container className={isStandalonePublic ? "py-5" : ""}>
       <Row className="mb-4">
         <Col>
           <h1 className="h3 mb-2 text-white">A Nossa Frota</h1>
@@ -89,8 +93,8 @@ function VehicleCatalogPage() {
                 {vehicles.map((vehicle) => (
                   <Col md={6} xl={4} key={vehicle.id}>
                     <Card className="rc-card rc-vehicle-card p-0 overflow-hidden h-100 border-0">
-                      {vehicle.image_url ? (
-                        <Card.Img variant="top" src={vehicle.image_url} alt={`${vehicle.brand} ${vehicle.model}`} className="rc-vehicle-card-img" />
+                      {vehicle.imageUrl ? (
+                        <Card.Img variant="top" src={vehicle.imageUrl} alt={`${vehicle.brand} ${vehicle.model}`} className="rc-vehicle-card-img" />
                       ) : (
                         <div className="rc-vehicle-card-img bg-secondary d-flex align-items-center justify-content-center text-dark fs-1">
                           <i className="bi bi-car-front-fill"></i>
@@ -134,6 +138,16 @@ function VehicleCatalogPage() {
         </Col>
       </Row>
     </Container>
+  );
+
+  return isStandalonePublic ? (
+    <div className="rc-public-page">
+      <LandingNavbar />
+      {content}
+      <LandingFooter />
+    </div>
+  ) : (
+    content
   );
 }
 

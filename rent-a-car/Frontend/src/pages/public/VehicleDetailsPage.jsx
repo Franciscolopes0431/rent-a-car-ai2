@@ -1,14 +1,19 @@
 import { Container, Row, Col, Button, Spinner, Table, Form } from 'react-bootstrap';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import * as vehicleService from '../../services/vehicleService';
 import { useAuth } from '../../hooks/useAuth';
+import LandingNavbar from '../../components/landing/LandingNavbar';
+import LandingFooter from '../../components/landing/LandingFooter';
 
 function VehicleDetailsPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const { isAuthenticated } = useAuth();
   
+  const isStandalonePublic = pathname.startsWith('/frota');
+
   const [vehicle, setVehicle] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -41,30 +46,31 @@ function VehicleDetailsPage() {
     }
   };
 
-  if (isLoading) {
-    return (
-      <Container className="py-5 text-center">
-        <Spinner animation="border" variant="warning" />
-        <p className="text-secondary mt-3">A carregar veículo...</p>
-      </Container>
-    );
-  }
+  const renderContent = () => {
+    if (isLoading) {
+      return (
+        <Container className="py-5 text-center">
+          <Spinner animation="border" variant="warning" />
+          <p className="text-secondary mt-3">A carregar veículo...</p>
+        </Container>
+      );
+    }
 
-  if (error || !vehicle) {
-    return (
-      <Container className="py-5">
-        <div className="alert alert-danger" role="alert">
-          {error || 'Veículo não encontrado.'}
-        </div>
-        <Button variant="link" as={Link} to="/frota" className="text-white p-0 text-decoration-none">
-          <i className="bi bi-arrow-left me-2"></i>Voltar à Frota
-        </Button>
-      </Container>
-    );
-  }
+    if (error || !vehicle) {
+      return (
+        <Container className="py-5">
+          <div className="alert alert-danger" role="alert">
+            {error || 'Veículo não encontrado.'}
+          </div>
+          <Button variant="link" as={Link} to="/frota" className="text-white p-0 text-decoration-none">
+            <i className="bi bi-arrow-left me-2"></i>Voltar à Frota
+          </Button>
+        </Container>
+      );
+    }
 
-  return (
-    <Container>
+    return (
+      <Container className={isStandalonePublic ? "py-5" : ""}>
       <div className="mb-4 d-flex align-items-center">
         <Button variant="link" as={Link} to="/frota" className="text-secondary p-0 text-decoration-none me-3">
           <i className="bi bi-arrow-left fs-4"></i>
@@ -77,8 +83,8 @@ function VehicleDetailsPage() {
       <Row className="g-4">
         <Col lg={8}>
           <div className="rc-card mb-4 p-0 overflow-hidden border-0">
-            {vehicle.image_url ? (
-              <img src={vehicle.image_url} alt={`${vehicle.brand} ${vehicle.model}`} className="w-100" style={{ height: '400px', objectFit: 'cover' }} />
+            {vehicle.imageUrl ? (
+              <img src={vehicle.imageUrl} alt={`${vehicle.brand} ${vehicle.model}`} className="w-100" style={{ height: '400px', objectFit: 'cover' }} />
             ) : (
               <div className="w-100 bg-secondary d-flex align-items-center justify-content-center text-dark" style={{ height: '400px' }}>
                 <i className="bi bi-car-front-fill" style={{ fontSize: '10rem' }}></i>
@@ -174,6 +180,19 @@ function VehicleDetailsPage() {
         </Col>
       </Row>
     </Container>
+    );
+  };
+
+  const content = renderContent();
+
+  return isStandalonePublic ? (
+    <div className="rc-public-page">
+      <LandingNavbar />
+      {content}
+      <LandingFooter />
+    </div>
+  ) : (
+    content
   );
 }
 

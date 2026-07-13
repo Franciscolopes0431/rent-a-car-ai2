@@ -1,11 +1,14 @@
 import React from 'react';
 import { Container, Row, Col, Card, Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
+import LandingNavbar from '../../components/landing/LandingNavbar';
+import LandingFooter from '../../components/landing/LandingFooter';
 import '../../styles/public-pages.css';
 
 function AboutUsPage() {
   return (
     <div className="rc-public-page">
+      <LandingNavbar />
       {/* Hero Section */}
       <section className="rc-hero-section">
         <div className="rc-hero-overlay"></div>
@@ -30,17 +33,17 @@ function AboutUsPage() {
             </p>
           </Col>
           <Col lg={6}>
-            <div className="rc-mission-card p-4 rounded shadow-sm">
+            <div className="rc-mission-card p-4 rounded shadow-sm text-white">
               <h4 className="fw-bold text-primary mb-3"><i className="bi bi-bullseye me-2"></i>Missão, Visão e Valores</h4>
               <ul className="list-unstyled mb-0">
-                <li className="mb-3">
-                  <strong>Missão:</strong> Proporcionar a melhor experiência de mobilidade com transparência e segurança.
+                <li className="mb-3 text-light">
+                  <strong className="text-white">Missão:</strong> Proporcionar a melhor experiência de mobilidade com transparência e segurança.
                 </li>
-                <li className="mb-3">
-                  <strong>Visão:</strong> Ser a rent-a-car de eleição em toda a Europa, reconhecida pela inovação e sustentabilidade.
+                <li className="mb-3 text-light">
+                  <strong className="text-white">Visão:</strong> Ser a rent-a-car de eleição em toda a Europa, reconhecida pela inovação e sustentabilidade.
                 </li>
-                <li>
-                  <strong>Valores:</strong> Confiança, Excelência, Inovação e Foco no Cliente.
+                <li className="text-light">
+                  <strong className="text-white">Valores:</strong> Confiança, Excelência, Inovação e Foco no Cliente.
                 </li>
               </ul>
             </div>
@@ -74,48 +77,48 @@ function AboutUsPage() {
           <h2 className="fw-bold mb-4 rc-section-title">Porquê Escolher-nos?</h2>
           <Row className="g-4">
             <Col md={4} sm={6}>
-              <Card className="rc-feature-card h-100 border-0 shadow-sm text-center p-4">
+              <Card className="rc-feature-card h-100 border-0 shadow-sm text-center p-4 text-white">
                 <div className="rc-feature-icon mx-auto mb-3 text-primary">
                   <i className="bi bi-tag-fill fs-1"></i>
                 </div>
-                <Card.Title className="fw-bold">Preços Competitivos</Card.Title>
-                <Card.Text className="text-secondary">As melhores tarifas do mercado sem taxas ocultas.</Card.Text>
+                <Card.Title className="fw-bold text-white">Preços Competitivos</Card.Title>
+                <Card.Text className="text-light">As melhores tarifas do mercado sem taxas ocultas.</Card.Text>
               </Card>
             </Col>
             <Col md={4} sm={6}>
-              <Card className="rc-feature-card h-100 border-0 shadow-sm text-center p-4">
+              <Card className="rc-feature-card h-100 border-0 shadow-sm text-center p-4 text-white">
                 <div className="rc-feature-icon mx-auto mb-3 text-primary">
                   <i className="bi bi-lightning-charge-fill fs-1"></i>
                 </div>
-                <Card.Title className="fw-bold">Reserva Rápida</Card.Title>
-                <Card.Text className="text-secondary">Processo de reserva simples e 100% digital.</Card.Text>
+                <Card.Title className="fw-bold text-white">Reserva Rápida</Card.Title>
+                <Card.Text className="text-light">Processo de reserva simples e 100% digital.</Card.Text>
               </Card>
             </Col>
             <Col md={4} sm={6}>
-              <Card className="rc-feature-card h-100 border-0 shadow-sm text-center p-4">
+              <Card className="rc-feature-card h-100 border-0 shadow-sm text-center p-4 text-white">
                 <div className="rc-feature-icon mx-auto mb-3 text-primary">
                   <i className="bi bi-headset fs-1"></i>
                 </div>
-                <Card.Title className="fw-bold">Suporte 24/7</Card.Title>
-                <Card.Text className="text-secondary">Assistência em viagem e apoio ao cliente a qualquer hora.</Card.Text>
+                <Card.Title className="fw-bold text-white">Suporte 24/7</Card.Title>
+                <Card.Text className="text-light">Assistência em viagem e apoio ao cliente a qualquer hora.</Card.Text>
               </Card>
             </Col>
             <Col md={4} sm={6} className="offset-md-2">
-              <Card className="rc-feature-card h-100 border-0 shadow-sm text-center p-4">
+              <Card className="rc-feature-card h-100 border-0 shadow-sm text-center p-4 text-white">
                 <div className="rc-feature-icon mx-auto mb-3 text-primary">
                   <i className="bi bi-car-front-fill fs-1"></i>
                 </div>
-                <Card.Title className="fw-bold">Frota Moderna</Card.Title>
-                <Card.Text className="text-secondary">Veículos recentes, limpos e sempre revistos.</Card.Text>
+                <Card.Title className="fw-bold text-white">Frota Moderna</Card.Title>
+                <Card.Text className="text-light">Veículos recentes, limpos e sempre revistos.</Card.Text>
               </Card>
             </Col>
             <Col md={4} sm={6}>
-              <Card className="rc-feature-card h-100 border-0 shadow-sm text-center p-4">
+              <Card className="rc-feature-card h-100 border-0 shadow-sm text-center p-4 text-white">
                 <div className="rc-feature-icon mx-auto mb-3 text-primary">
-                  <i className="bi bi-shield-check-fill fs-1"></i>
+                  <i className="bi bi-shield-fill-check fs-1"></i>
                 </div>
-                <Card.Title className="fw-bold">Seguro Incluído</Card.Title>
-                <Card.Text className="text-secondary">Viaje com tranquilidade total com as nossas opções de seguro.</Card.Text>
+                <Card.Title className="fw-bold text-white">Seguro Incluído</Card.Title>
+                <Card.Text className="text-light">Viaje com tranquilidade total com as nossas opções de seguro.</Card.Text>
               </Card>
             </Col>
           </Row>
@@ -130,6 +133,7 @@ function AboutUsPage() {
           </Button>
         </div>
       </Container>
+      <LandingFooter />
     </div>
   );
 }

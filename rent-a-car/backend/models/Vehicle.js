@@ -38,6 +38,11 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         defaultValue: 'Disponível',
       },
+      imageUrl: {
+        type: DataTypes.STRING(255),
+        allowNull: true,
+        field: 'image_url',
+      },
     },
     {
       tableName: 'vehicles',

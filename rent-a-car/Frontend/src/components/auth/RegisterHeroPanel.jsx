@@ -2,7 +2,7 @@ import Logo from '../common/Logo';
 
 const BENEFITS = [
   'Reservas em menos de 2 minutos',
-  'Cancelamento gratuito até 24h antes',
+  'Cancelamento simples pela área de cliente',
   'Seguro incluído em todos os veículos',
   'Suporte 24/7 em português',
 ];

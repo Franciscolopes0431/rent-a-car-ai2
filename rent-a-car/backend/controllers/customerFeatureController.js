@@ -2,15 +2,6 @@ const { SupportTicket, SupportMessage, Review, Reservation, Vehicle, User } = re
 const { notify } = require('../services/notificationService');
 
 const privileged = (user) => ['admin', 'gestor'].includes(user?.role);
-const publicTicketAttempts = new Map();
-
-function allowPublicTicket(ip) {
-  const now = Date.now();
-  const recent = (publicTicketAttempts.get(ip) || []).filter((time) => now - time < 15 * 60 * 1000);
-  if (recent.length >= 5) return false;
-  publicTicketAttempts.set(ip, [...recent, now]);
-  return true;
-}
 
 async function listTickets(req, res, next) {
   try {
@@ -19,6 +10,7 @@ async function listTickets(req, res, next) {
       where,
       include: [{ model: User, as: 'user', attributes: ['id', 'nome', 'email'] }],
       order: [['createdAt', 'DESC']],
+      limit: 200,
     });
     return res.json(data);
   } catch (error) { return next(error); }
@@ -26,28 +18,27 @@ async function listTickets(req, res, next) {
 
 async function createTicket(req, res, next) {
   try {
-    const { subject, message, reservationId } = req.body;
-    if (!subject || !message || String(message).trim().length < 10) return res.status(400).json({ message: 'Indique o assunto e uma mensagem com pelo menos 10 caracteres.' });
+    const { reservationId } = req.body;
+    const subject = String(req.body.subject || '').trim();
+    const message = String(req.body.message || '').trim();
+    if (subject.length < 3 || subject.length > 120 || message.length < 10 || message.length > 5000) return res.status(400).json({ message: 'Use um assunto entre 3 e 120 caracteres e uma mensagem entre 10 e 5000 caracteres.' });
     if (reservationId) {
       const reservation = await Reservation.findOne({ where: { id: reservationId, userId: req.user.id } });
       if (!reservation) return res.status(404).json({ message: 'Reserva associada não encontrada.' });
     }
-    const ticket = await SupportTicket.create({ userId: req.user.id, reservationId: reservationId || null, subject, message: String(message).trim(), origin: 'area_cliente' });
+    const ticket = await SupportTicket.create({ userId: req.user.id, reservationId: reservationId || null, subject, message, origin: 'area_cliente' });
     return res.status(201).json({ ...ticket.toJSON(), reference: `SUP-${String(ticket.id).padStart(6, '0')}` });
   } catch (error) { return next(error); }
 }
 
 async function createPublicTicket(req, res, next) {
   try {
-    if (!allowPublicTicket(req.ip || req.socket?.remoteAddress || 'unknown')) {
-      return res.status(429).json({ message: 'Foram enviados demasiados pedidos. Tente novamente dentro de alguns minutos.' });
-    }
     const name = String(req.body.name || '').trim();
     const email = String(req.body.email || '').trim().toLowerCase();
     const phone = String(req.body.phone || '').trim();
     const subject = String(req.body.subject || '').trim();
     const message = String(req.body.message || '').trim();
-    if (name.length < 2 || subject.length < 3 || message.length < 10 || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+    if (name.length < 2 || subject.length < 3 || message.length < 10 || message.length > 5000 || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
       return res.status(400).json({ message: 'Preencha o nome, um email válido, o assunto e uma mensagem com pelo menos 10 caracteres.' });
     }
     const ticket = await SupportTicket.create({
@@ -57,7 +48,7 @@ async function createPublicTicket(req, res, next) {
       guestEmail: email.slice(0, 180),
       guestPhone: phone ? phone.slice(0, 30) : null,
       subject: subject.slice(0, 120),
-      message,
+      message: message.slice(0, 5000),
       origin: 'contacto_publico',
     });
     return res.status(201).json({ reference: `SUP-${String(ticket.id).padStart(6, '0')}` });
@@ -167,6 +158,7 @@ async function listManagedReviews(req, res, next) {
         { model: Reservation, as: 'reservation', include: [{ model: Vehicle, as: 'vehicle', attributes: ['id', 'brand', 'model', 'plate'] }] },
       ],
       order: [['createdAt', 'DESC']],
+      limit: 200,
     });
     return res.json(data);
   } catch (error) { return next(error); }

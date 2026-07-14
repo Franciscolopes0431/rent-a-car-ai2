@@ -2,8 +2,16 @@ const { Op, fn, col } = require('sequelize');
 const { Reservation, Vehicle, User } = require('../models');
 
 function dateOnly(value) {
-  return new Date(value).toISOString().slice(0, 10);
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    const error = new Error('Período do relatório inválido.');
+    error.status = 400;
+    throw error;
+  }
+  return date.toISOString().slice(0, 10);
 }
+
+const safeLimit = (value, fallback) => Math.min(100, Math.max(1, Number.isInteger(Number(value)) ? Number(value) : fallback));
 
 function buildPeriodRange({ from, to }) {
   const now = new Date();
@@ -39,7 +47,7 @@ async function topVehicles({ limit = 5, from, to }) {
     attributes: ['vehicleId', [fn('COUNT', col('Reservation.id')), 'reservations'], [fn('SUM', col('preco_estimado')), 'revenue']],
     where: { estado: { [Op.in]: ['confirmada', 'concluida'] }, data_inicio: { [Op.between]: [start, end] } },
     include: [{ model: Vehicle, as: 'vehicle', attributes: ['brand', 'model', 'plate'] }],
-    group: ['vehicleId', 'vehicle.id'], order: [[fn('SUM', col('preco_estimado')), 'DESC']], limit: Number(limit), subQuery: false,
+    group: ['vehicleId', 'vehicle.id'], order: [[fn('SUM', col('preco_estimado')), 'DESC']], limit: safeLimit(limit, 5), subQuery: false,
   });
   return rows.map((row) => ({
     vehicle: `${row.vehicle?.brand || 'Viatura'} ${row.vehicle?.model || ''}`.trim(),
@@ -53,7 +61,7 @@ async function topCustomers({ limit = 5, from, to }) {
     attributes: ['userId', [fn('COUNT', col('Reservation.id')), 'reservations'], [fn('SUM', col('preco_estimado')), 'revenue']],
     where: { estado: { [Op.in]: ['confirmada', 'concluida'] }, data_inicio: { [Op.between]: [start, end] } },
     include: [{ model: User, as: 'user', attributes: ['nome', 'email'] }],
-    group: ['userId', 'user.id'], order: [[fn('SUM', col('preco_estimado')), 'DESC']], limit: Number(limit), subQuery: false,
+    group: ['userId', 'user.id'], order: [[fn('SUM', col('preco_estimado')), 'DESC']], limit: safeLimit(limit, 5), subQuery: false,
   });
   return rows.map((row) => ({
     customer: row.user?.nome || 'Cliente sem nome', email: row.user?.email || '-',
@@ -82,7 +90,7 @@ async function fleetUtilization({ from, to, limit = 10 }) {
   return vehicles.map((vehicle) => {
     const bookedDays = Math.min(periodDays, daysByVehicle[vehicle.id] || 0);
     return { vehicle: `${vehicle.brand} ${vehicle.model}`, plate: vehicle.plate, utilization: Number(((bookedDays / periodDays) * 100).toFixed(1)), bookedDays, periodDays };
-  }).sort((a, b) => b.utilization - a.utilization).slice(0, Number(limit));
+  }).sort((a, b) => b.utilization - a.utilization).slice(0, safeLimit(limit, 10));
 }
 
 module.exports = { revenueByPeriod, bookingsByStatus, topVehicles, topCustomers, fleetUtilization };

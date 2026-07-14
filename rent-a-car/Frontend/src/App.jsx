@@ -1,51 +1,52 @@
+import { lazy, Suspense } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
-import DashboardLayout from './components/layout/DashboardLayout';
 import ProtectedRoute from './components/layout/ProtectedRoute';
 import PublicRoute from './components/layout/PublicRoute';
 import { RegisterProvider } from './context/RegisterContext';
-import DashboardPage from './pages/DashboardPage';
-import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
-import FleetPage from './pages/fleet/FleetPage';
-import BookingsPage from './pages/bookings/BookingsPage';
-import CustomersPage from './pages/customers/CustomersPage';
-import MaintenancePage from './pages/maintenance/MaintenancePage';
-import ReportsPage from './pages/reports/ReportsPage';
-// Gestor imports
-import GestorLayout from './components/layout/gestor/GestorLayout';
-import GestorDashboardPage from './pages/gestor/GestorDashboardPage';
-import GestorFleetPage from './pages/gestor/fleet/GestorFleetPage';
-import GestorBookingsPage from './pages/gestor/bookings/GestorBookingsPage';
-import GestorCustomersPage from './pages/gestor/customers/GestorCustomersPage';
-import GestorMaintenancePage from './pages/gestor/maintenance/GestorMaintenancePage';
-import GestorReportsPage from './pages/gestor/reports/GestorReportsPage';
-import ClientLayout from './components/layout/customer/ClientLayout';
-import LandingPage from './pages/LandingPage';
-import VehicleCatalogPage from './pages/public/VehicleCatalogPage';
-import VehicleDetailsPage from './pages/public/VehicleDetailsPage';
-import AboutUsPage from './pages/public/AboutUsPage';
-import ContactPage from './pages/public/ContactPage';
-import AccountPage from './pages/customer/AccountPage';
-import PaymentMethodsPage from './pages/customer/PaymentMethodsPage';
-import CheckoutPage from './pages/customer/CheckoutPage';
-import MyBookingsPage from './pages/customer/MyBookingsPage';
-import HistoryPage from './pages/customer/HistoryPage';
-import ReviewsPage from './pages/customer/ReviewsPage';
-import SupportPage from './pages/customer/SupportPage';
-import ClientDashboardPage from './pages/customer/ClientDashboardPage';
-import NewReservationPage from './pages/customer/NewReservationPage';
-import ReservationDetailsPage from './pages/reservations/ReservationDetailsPage';
-import LegalPage from './pages/public/LegalPage';
-import SupportManagementPage from './pages/support/SupportManagementPage';
-import ReviewManagementPage from './pages/reviews/ReviewManagementPage';
-import NotificationsPage from './pages/customer/NotificationsPage';
-import StaffManagementPage from './pages/admin/StaffManagementPage';
-import SettingsPage from './pages/admin/SettingsPage';
-import AuditLogPage from './pages/admin/AuditLogPage';
+
+const DashboardLayout = lazy(() => import('./components/layout/DashboardLayout'));
+const GestorLayout = lazy(() => import('./components/layout/gestor/GestorLayout'));
+const ClientLayout = lazy(() => import('./components/layout/customer/ClientLayout'));
+const DashboardPage = lazy(() => import('./pages/DashboardPage'));
+const LoginPage = lazy(() => import('./pages/LoginPage'));
+const RegisterPage = lazy(() => import('./pages/RegisterPage'));
+const FleetPage = lazy(() => import('./pages/fleet/FleetPage'));
+const BookingsPage = lazy(() => import('./pages/bookings/BookingsPage'));
+const CustomersPage = lazy(() => import('./pages/customers/CustomersPage'));
+const MaintenancePage = lazy(() => import('./pages/maintenance/MaintenancePage'));
+const ReportsPage = lazy(() => import('./pages/reports/ReportsPage'));
+const GestorDashboardPage = lazy(() => import('./pages/gestor/GestorDashboardPage'));
+const GestorFleetPage = lazy(() => import('./pages/gestor/fleet/GestorFleetPage'));
+const GestorBookingsPage = lazy(() => import('./pages/gestor/bookings/GestorBookingsPage'));
+const GestorCustomersPage = lazy(() => import('./pages/gestor/customers/GestorCustomersPage'));
+const GestorMaintenancePage = lazy(() => import('./pages/gestor/maintenance/GestorMaintenancePage'));
+const GestorReportsPage = lazy(() => import('./pages/gestor/reports/GestorReportsPage'));
+const LandingPage = lazy(() => import('./pages/LandingPage'));
+const VehicleCatalogPage = lazy(() => import('./pages/public/VehicleCatalogPage'));
+const VehicleDetailsPage = lazy(() => import('./pages/public/VehicleDetailsPage'));
+const AboutUsPage = lazy(() => import('./pages/public/AboutUsPage'));
+const ContactPage = lazy(() => import('./pages/public/ContactPage'));
+const AccountPage = lazy(() => import('./pages/customer/AccountPage'));
+const PaymentMethodsPage = lazy(() => import('./pages/customer/PaymentMethodsPage'));
+const CheckoutPage = lazy(() => import('./pages/customer/CheckoutPage'));
+const MyBookingsPage = lazy(() => import('./pages/customer/MyBookingsPage'));
+const HistoryPage = lazy(() => import('./pages/customer/HistoryPage'));
+const ReviewsPage = lazy(() => import('./pages/customer/ReviewsPage'));
+const SupportPage = lazy(() => import('./pages/customer/SupportPage'));
+const ClientDashboardPage = lazy(() => import('./pages/customer/ClientDashboardPage'));
+const NewReservationPage = lazy(() => import('./pages/customer/NewReservationPage'));
+const ReservationDetailsPage = lazy(() => import('./pages/reservations/ReservationDetailsPage'));
+const LegalPage = lazy(() => import('./pages/public/LegalPage'));
+const SupportManagementPage = lazy(() => import('./pages/support/SupportManagementPage'));
+const ReviewManagementPage = lazy(() => import('./pages/reviews/ReviewManagementPage'));
+const NotificationsPage = lazy(() => import('./pages/customer/NotificationsPage'));
+const StaffManagementPage = lazy(() => import('./pages/admin/StaffManagementPage'));
+const SettingsPage = lazy(() => import('./pages/admin/SettingsPage'));
+const AuditLogPage = lazy(() => import('./pages/admin/AuditLogPage'));
 
 function App() {
   return (
-    <Routes>
+    <Suspense fallback={<div className="min-vh-100 d-flex align-items-center justify-content-center text-secondary">A carregar...</div>}><Routes>
       <Route element={<PublicRoute />}>
         <Route path="/" element={<LandingPage />} />
         <Route path="/frota" element={<VehicleCatalogPage />} />
@@ -126,7 +127,7 @@ function App() {
 
       <Route path="/dashboard" element={<Navigate to="/admin" replace />} />
       <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+    </Routes></Suspense>
   );
 }
 

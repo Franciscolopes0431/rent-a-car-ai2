@@ -9,8 +9,8 @@ function GestorSidebarUserCard() {
   const userName = user?.name || 'Gestor';
   const userEmail = user?.email || 'gestor@rentcar.pt';
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     navigate('/login');
   };
 

@@ -1,4 +1,4 @@
-import { createContext, useMemo, useReducer } from 'react';
+import { createContext, useEffect, useMemo, useReducer, useState } from 'react';
 import axiosClient from '../api/axiosClient';
 
 const STORAGE_KEY = 'authSession';
@@ -52,6 +52,30 @@ function authReducer(state, action) {
 
 export function AuthProvider({ children }) {
   const [state, dispatch] = useReducer(authReducer, initialState);
+  const [isInitializing, setIsInitializing] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    if (!storedSession.user) {
+      setIsInitializing(false);
+      return () => { active = false; };
+    }
+    axiosClient.get('/auth/me')
+      .then((response) => {
+        if (!active || !response.data) return;
+        const storage = window.localStorage.getItem(STORAGE_KEY) ? window.localStorage : window.sessionStorage;
+        storage.setItem(STORAGE_KEY, JSON.stringify({ user: response.data }));
+        dispatch({ type: 'LOGIN_SUCCESS', payload: { user: response.data } });
+      })
+      .catch(() => {
+        if (!active) return;
+        window.localStorage.removeItem(STORAGE_KEY);
+        window.sessionStorage.removeItem(STORAGE_KEY);
+        dispatch({ type: 'LOGOUT' });
+      })
+      .finally(() => { if (active) setIsInitializing(false); });
+    return () => { active = false; };
+  }, []);
 
   const login = (payload) => {
     if (typeof window !== 'undefined') {
@@ -63,13 +87,14 @@ export function AuthProvider({ children }) {
     dispatch({ type: 'LOGIN_SUCCESS', payload });
   };
 
-  const logout = () => {
-    axiosClient.post('/auth/logout').catch(() => {});
-    if (typeof window !== 'undefined') {
-      window.localStorage.removeItem('authSession');
-      window.sessionStorage.removeItem(STORAGE_KEY);
+  const logout = async () => {
+    try { await axiosClient.post('/auth/logout'); } finally {
+      if (typeof window !== 'undefined') {
+        window.localStorage.removeItem(STORAGE_KEY);
+        window.sessionStorage.removeItem(STORAGE_KEY);
+      }
+      dispatch({ type: 'LOGOUT' });
     }
-    dispatch({ type: 'LOGOUT' });
   };
 
   const updateUser = (user) => {
@@ -88,8 +113,9 @@ export function AuthProvider({ children }) {
       login,
       logout,
       updateUser,
+      isInitializing,
     }),
-    [state]
+    [state, isInitializing]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

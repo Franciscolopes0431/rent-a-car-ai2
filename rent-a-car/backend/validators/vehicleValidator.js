@@ -16,8 +16,8 @@ function validateVehiclePayload(payload, isUpdate = false) {
     errors.push('A matrícula deve seguir o formato AA-AA-AA');
   }
 
-  if (pricePerDay !== undefined && Number(pricePerDay) < 0) {
-    errors.push('O preço por dia deve ser positivo');
+  if (pricePerDay !== undefined && (!Number.isFinite(Number(pricePerDay)) || Number(pricePerDay) <= 0)) {
+    errors.push('O preço por dia deve ser superior a zero');
   }
 
   if (status && !STATUS_OPTIONS.includes(status)) {

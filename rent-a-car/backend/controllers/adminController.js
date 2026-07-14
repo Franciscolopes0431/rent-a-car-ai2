@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
 const { Op } = require('sequelize');
 const { User, AuditLog, AppSetting } = require('../models');
+const { isStrongPassword, PASSWORD_MESSAGE } = require('../utils/passwordPolicy');
 
 const STAFF_ROLES = ['gestor', 'admin'];
 const SETTING_DEFAULTS = {
@@ -27,7 +28,7 @@ async function createStaff(req, res, next) {
     const email = String(req.body.email || '').trim().toLowerCase();
     const password = String(req.body.password || '');
     const role = String(req.body.role || 'gestor');
-    if (name.length < 2 || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email) || password.length < 8 || !STAFF_ROLES.includes(role)) return res.status(400).json({ message: 'Indique nome, email válido, função e palavra-passe com pelo menos 8 caracteres.' });
+    if (name.length < 2 || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email) || !isStrongPassword(password) || !STAFF_ROLES.includes(role)) return res.status(400).json({ message: PASSWORD_MESSAGE });
     if (await User.findOne({ where: { email } })) return res.status(409).json({ message: 'Já existe uma conta com este email.' });
     const user = await User.create({ nome: name, email, password: await bcrypt.hash(password, 10), tipo: role });
     return res.status(201).json(publicStaff(user));
@@ -46,7 +47,12 @@ async function updateStaff(req, res, next) {
     if (duplicate) return res.status(409).json({ message: 'Já existe uma conta com este email.' });
     if (user.id === req.user.id && role !== 'admin') return res.status(409).json({ message: 'Não pode remover a sua própria permissão de administrador.' });
     if (user.tipo === 'admin' && role !== 'admin' && await User.count({ where: { tipo: 'admin' } }) <= 1) return res.status(409).json({ message: 'Tem de existir pelo menos um administrador.' });
-    await user.update({ nome: name, email, tipo: role });
+    await user.update({
+      nome: name,
+      email,
+      tipo: role,
+      ...(role !== user.tipo ? { authVersion: Number(user.authVersion || 0) + 1 } : {}),
+    });
     return res.json(publicStaff(user));
   } catch (error) { return next(error); }
 }
@@ -54,10 +60,13 @@ async function updateStaff(req, res, next) {
 async function updateStaffPassword(req, res, next) {
   try {
     const password = String(req.body.password || '');
-    if (password.length < 8) return res.status(400).json({ message: 'A palavra-passe deve ter pelo menos 8 caracteres.' });
+    if (!isStrongPassword(password)) return res.status(400).json({ message: PASSWORD_MESSAGE });
     const user = await User.findOne({ where: { id: req.params.id, tipo: { [Op.in]: STAFF_ROLES } } });
     if (!user) return res.status(404).json({ message: 'Membro da equipa não encontrado.' });
-    await user.update({ password: await bcrypt.hash(password, 10) });
+    await user.update({
+      password: await bcrypt.hash(password, 10),
+      authVersion: Number(user.authVersion || 0) + 1,
+    });
     return res.json({ message: 'Palavra-passe atualizada.' });
   } catch (error) { return next(error); }
 }

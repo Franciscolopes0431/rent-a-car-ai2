@@ -28,7 +28,7 @@ function HeroSection() {
   };
 
   return (
-    <header className="rc-landing-hero" style={{ backgroundImage: `url('/src/assets/images/bmw-hero.jpg')` }}>
+    <header className="rc-landing-hero" style={{ backgroundImage: "url('/cars/Porsche%20Cayenne.jpg')" }}>
       <div className="rc-landing-hero-overlay" />
       <Container className="rc-landing-hero-content">
         <Row>

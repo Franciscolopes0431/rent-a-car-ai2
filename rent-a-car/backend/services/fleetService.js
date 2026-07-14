@@ -1,18 +1,23 @@
-const { fn, col } = require('sequelize');
-const { Vehicle } = require('../models');
+const { Op } = require('sequelize');
+const { Vehicle, Reservation } = require('../models');
 
 async function getStatus() {
-  const [summaryRows, vehicles] = await Promise.all([
-    Vehicle.findAll({
-      attributes: ['status', [fn('COUNT', col('id')), 'count']],
-      group: ['status'],
-      raw: true,
-    }),
-    Vehicle.findAll({
-      order: [['updatedAt', 'DESC']],
-      limit: 10,
+  const today = new Date().toISOString().slice(0, 10);
+  const [allVehicles, activeReservations] = await Promise.all([
+    Vehicle.findAll({ order: [['updatedAt', 'DESC']] }),
+    Reservation.findAll({
+      where: {
+        estado: 'confirmada',
+        data_inicio: { [Op.lte]: today },
+        data_fim: { [Op.gt]: today },
+      },
+      attributes: ['vehicleId'],
     }),
   ]);
+  const reservedIds = new Set(activeReservations.map((item) => Number(item.vehicleId)));
+  const effectiveStatus = (vehicle) => vehicle.status === 'Manutenção'
+    ? 'Manutenção'
+    : reservedIds.has(Number(vehicle.id)) ? 'Reservado' : 'Disponível';
 
   const summary = {
     available: 0,
@@ -20,28 +25,21 @@ async function getStatus() {
     maintenance: 0,
   };
 
-  summaryRows.forEach((row) => {
-    if (row.status === 'Disponível') {
-      summary.available = Number(row.count);
-    }
-
-    if (row.status === 'Reservado') {
-      summary.reserved = Number(row.count);
-    }
-
-    if (row.status === 'Manutenção') {
-      summary.maintenance = Number(row.count);
-    }
+  allVehicles.forEach((vehicle) => {
+    const status = effectiveStatus(vehicle);
+    if (status === 'Disponível') summary.available += 1;
+    if (status === 'Reservado') summary.reserved += 1;
+    if (status === 'Manutenção') summary.maintenance += 1;
   });
 
   return {
     summary,
-    vehicles: vehicles.map((vehicle) => ({
+    vehicles: allVehicles.slice(0, 10).map((vehicle) => ({
       model: `${vehicle.brand} ${vehicle.model}`,
       plate: vehicle.plate,
       category: vehicle.category,
       pricePerDay: Number(vehicle.pricePerDay),
-      status: vehicle.status,
+      status: effectiveStatus(vehicle),
     })),
   };
 }

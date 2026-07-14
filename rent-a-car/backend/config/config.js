@@ -20,7 +20,7 @@ module.exports = {
         ? {
             ssl: {
               require: true,
-              rejectUnauthorized: false,
+              rejectUnauthorized: process.env.DB_SSL_REJECT_UNAUTHORIZED !== 'false',
             },
           }
         : {},
@@ -30,13 +30,15 @@ module.exports = {
     database: `${process.env.DB_NAME}_test`,
   },
   production: {
-    ...baseConfig,
+    ...(process.env.DATABASE_URL
+      ? { use_env_variable: 'DATABASE_URL', dialect: 'postgres', logging: false }
+      : baseConfig),
     dialectOptions:
       process.env.DB_SSL === 'true'
         ? {
             ssl: {
               require: true,
-              rejectUnauthorized: false,
+              rejectUnauthorized: process.env.DB_SSL_REJECT_UNAUTHORIZED !== 'false',
             },
           }
         : {},

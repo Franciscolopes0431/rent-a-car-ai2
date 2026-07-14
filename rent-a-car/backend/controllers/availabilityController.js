@@ -1,6 +1,7 @@
 const { Op } = require('sequelize');
 const { Vehicle, Reservation, Unavailability } = require('../models');
 const { normalizeDateRange, buildOverlapWhere } = require('../utils/dateHelpers');
+const { blockingReservationWhere } = require('../services/reservationLifecycleService');
 
 async function getAvailableVehicles(req, res, next) {
   try {
@@ -35,8 +36,7 @@ async function getAvailableVehicles(req, res, next) {
     const overlappingReservations = await Reservation.findAll({
       where: {
         vehicleId: { [Op.in]: vehicleIds },
-        estado: { [Op.ne]: 'cancelada' },
-        ...buildOverlapWhere(inicio, fim),
+        ...blockingReservationWhere(inicio, fim),
       },
       attributes: ['vehicleId'],
     });

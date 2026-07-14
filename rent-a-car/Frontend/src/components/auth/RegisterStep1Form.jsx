@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from 'react';
 import { Button, Col, Form, Row, Spinner } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { useRegister } from '../../context/RegisterContext';
-import { checkEmail } from '../../services/authService';
 import RegisterStepIndicator from './RegisterStepIndicator';
 
 const NAME_REGEX = /^[A-Za-zÀ-ÿ\s'-]+$/;
@@ -72,40 +71,6 @@ function RegisterStep1Form() {
     return Object.keys(validationErrors).length === 0;
   };
 
-  const validateEmailAvailability = async () => {
-    const email = formData.email.trim();
-
-    if (!EMAIL_REGEX.test(email)) {
-      return false;
-    }
-
-    try {
-      const response = await checkEmail(email);
-      const isAvailable = Boolean(response?.data?.available);
-
-      if (!isAvailable) {
-        setErrors((prev) => ({
-          ...prev,
-          email: 'Este email já está registado.',
-        }));
-      }
-
-      return isAvailable;
-    } catch (error) {
-      setErrors((prev) => ({
-        ...prev,
-        email: 'Não foi possível validar o email. Tente novamente.',
-      }));
-      return false;
-    }
-  };
-
-  const handleEmailBlur = async () => {
-    if (formData.email.trim() && EMAIL_REGEX.test(formData.email.trim())) {
-      await validateEmailAvailability();
-    }
-  };
-
   const handleSubmit = async (event) => {
     event.preventDefault();
 
@@ -116,12 +81,6 @@ function RegisterStep1Form() {
     setIsLoading(true);
 
     try {
-      const emailAvailable = await validateEmailAvailability();
-
-      if (!emailAvailable) {
-        return;
-      }
-
       updateData({
         firstName: formData.firstName.trim(),
         lastName: formData.lastName.trim(),
@@ -213,7 +172,6 @@ function RegisterStep1Form() {
               name="email"
               value={formData.email}
               onChange={handleChange}
-              onBlur={handleEmailBlur}
               placeholder="joao@exemplo.com"
               className="rc-register-input"
               autoComplete="email"

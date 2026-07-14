@@ -2,11 +2,12 @@ const path = require('path');
 require('dotenv').config({ path: path.resolve(__dirname, '..', '.env') });
 const bcrypt = require('bcryptjs');
 const { sequelize, User } = require('../models');
+const { isStrongPassword, PASSWORD_MESSAGE } = require('../utils/passwordPolicy');
 
 async function run() {
   try {
     const seedPassword = process.env.SEED_USER_PASSWORD;
-    if (!seedPassword || seedPassword.length < 12) throw new Error('Defina SEED_USER_PASSWORD com pelo menos 12 caracteres.');
+    if (!isStrongPassword(seedPassword) || seedPassword.length < 12) throw new Error(`${PASSWORD_MESSAGE} Para contas iniciais use pelo menos 12 caracteres.`);
     await sequelize.authenticate();
     await sequelize.sync();
 

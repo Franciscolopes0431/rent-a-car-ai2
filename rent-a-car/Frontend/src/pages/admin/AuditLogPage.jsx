@@ -3,7 +3,7 @@ import { Alert, Col, Container, Form, Row, Spinner, Table } from 'react-bootstra
 import Pagination from '../../components/common/Pagination';
 import * as adminService from '../../services/adminService';
 
-const actionLabels = { criar: 'Criação', alterar: 'Alteração', alterar_estado: 'Mudança de estado', eliminar: 'Eliminação' };
+const actionLabels = { consultar: 'Consulta', criar: 'Criação', alterar: 'Alteração', alterar_estado: 'Mudança de estado', eliminar: 'Eliminação' };
 function AuditLogPage() {
   const [logs, setLogs] = useState([]);
   const [pagination, setPagination] = useState({ page: 1, pageSize: 20, total: 0, totalPages: 0 });

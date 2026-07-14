@@ -1,14 +1,27 @@
-const { MaintenanceAlert, Vehicle } = require('../models');
+const { Op } = require('sequelize');
+const { MaintenanceAlert, Vehicle, Reservation } = require('../models');
+const { normalizePagination } = require('../utils/pagination');
 
 async function syncVehicleStatus(vehicleId, transaction) {
   const pending = await MaintenanceAlert.count({ where: { vehicleId, resolved: false }, transaction });
+  const today = new Date().toISOString().slice(0, 10);
+  const activeReservation = pending ? null : await Reservation.findOne({
+    where: {
+      vehicleId,
+      estado: 'confirmada',
+      data_inicio: { [Op.lte]: today },
+      data_fim: { [Op.gt]: today },
+    },
+    transaction,
+  });
   await Vehicle.update(
-    { status: pending > 0 ? 'Manutenção' : 'Disponível' },
+    { status: pending > 0 ? 'Manutenção' : activeReservation ? 'Reservado' : 'Disponível' },
     { where: { id: vehicleId }, transaction }
   );
 }
 
 async function list({ resolved, vehicleId, type, page = 1, pageSize = 10 }) {
+  const pagination = normalizePagination(page, pageSize);
   const where = {};
   if (resolved !== undefined && resolved !== '') where.resolved = resolved === 'true' || resolved === true;
   if (vehicleId) where.vehicleId = vehicleId;
@@ -16,9 +29,9 @@ async function list({ resolved, vehicleId, type, page = 1, pageSize = 10 }) {
   const { rows, count } = await MaintenanceAlert.findAndCountAll({
     where,
     include: [{ model: Vehicle, as: 'vehicle', attributes: ['brand', 'model', 'plate', 'status'] }],
-    order: [['createdAt', 'DESC']], limit: Number(pageSize), offset: (Number(page) - 1) * Number(pageSize), distinct: true,
+    order: [['createdAt', 'DESC']], limit: pagination.limit, offset: pagination.offset, distinct: true,
   });
-  return { data: rows, pagination: { page: Number(page), pageSize: Number(pageSize), total: count, totalPages: Math.ceil(count / Number(pageSize)) } };
+  return { data: rows, pagination: { page: pagination.page, pageSize: pagination.pageSize, total: count, totalPages: Math.ceil(count / pagination.pageSize) } };
 }
 
 async function findById(id) {

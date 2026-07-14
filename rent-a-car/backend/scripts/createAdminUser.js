@@ -6,11 +6,12 @@ require('dotenv').config({
 
 const { sequelize, User } = require('../models');
 const bcrypt = require('bcryptjs');
+const { isStrongPassword, PASSWORD_MESSAGE } = require('../utils/passwordPolicy');
 
 async function run() {
   try {
     const adminPassword = process.env.ADMIN_INITIAL_PASSWORD;
-    if (!adminPassword || adminPassword.length < 12) throw new Error('Defina ADMIN_INITIAL_PASSWORD com pelo menos 12 caracteres.');
+    if (!isStrongPassword(adminPassword) || adminPassword.length < 12) throw new Error(`${PASSWORD_MESSAGE} Para a conta inicial use pelo menos 12 caracteres.`);
     const password = await bcrypt.hash(adminPassword, 10);
     await sequelize.authenticate();
     await sequelize.sync();

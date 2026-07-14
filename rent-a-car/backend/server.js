@@ -6,6 +6,7 @@ require('dotenv').config({
 
 const app = require('./app');
 const { sequelize } = require('./models');
+const { runReservationLifecycle } = require('./services/reservationLifecycleService');
 
 const PORT = process.env.PORT || 3000;
 
@@ -13,14 +14,11 @@ async function bootstrap() {
   try {
     await sequelize.authenticate();
 
-    await sequelize.query(`DO $$ BEGIN
-      ALTER TYPE "enum_reservations_estado" ADD VALUE IF NOT EXISTS 'concluida';
-    EXCEPTION WHEN undefined_object THEN NULL; END $$;`);
-
-    // Em projetos sem migrations, sync cria/atualiza as tabelas com base nos models.
-    await sequelize.sync({ alter: true });
-    // Compatibilidade com instalações onde support_tickets foi criada antes dos contactos públicos.
-    await sequelize.query('ALTER TABLE "support_tickets" ALTER COLUMN "userId" DROP NOT NULL');
+    await runReservationLifecycle();
+    const lifecycleTimer = setInterval(() => {
+      runReservationLifecycle().catch((error) => console.error('Erro no ciclo de reservas:', error.message));
+    }, 5 * 60 * 1000);
+    lifecycleTimer.unref();
 
     app.listen(PORT, () => {
       console.log(`Servidor a correr em http://localhost:${PORT}`);

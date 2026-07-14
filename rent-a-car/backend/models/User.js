@@ -32,6 +32,13 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING(30),
         allowNull: true,
       },
+      authVersion: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 0,
+        field: 'auth_version',
+        validate: { min: 0 },
+      },
     },
     {
       tableName: 'users',

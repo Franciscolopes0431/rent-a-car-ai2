@@ -1,6 +1,8 @@
 const { Op } = require('sequelize');
 const bcrypt = require('bcryptjs');
 const { User, Reservation, Vehicle } = require('../models');
+const { normalizePagination } = require('../utils/pagination');
+const { isStrongPassword, PASSWORD_MESSAGE } = require('../utils/passwordPolicy');
 
 function splitName(name = '') {
   const parts = String(name).trim().split(/\s+/).filter(Boolean);
@@ -22,6 +24,7 @@ function toCustomer(user) {
 }
 
 async function list({ search, page = 1, pageSize = 10 }) {
+  const pagination = normalizePagination(page, pageSize);
   const where = { tipo: 'cliente' };
   if (search) {
     where[Op.or] = [
@@ -32,14 +35,14 @@ async function list({ search, page = 1, pageSize = 10 }) {
   const { rows, count } = await User.findAndCountAll({
     where,
     order: [['updatedAt', 'DESC']],
-    limit: Number(pageSize),
-    offset: (Number(page) - 1) * Number(pageSize),
+    limit: pagination.limit,
+    offset: pagination.offset,
   });
   return {
     data: rows.map(toCustomer),
     pagination: {
-      page: Number(page), pageSize: Number(pageSize), total: count,
-      totalPages: Math.ceil(count / Number(pageSize)),
+      page: pagination.page, pageSize: pagination.pageSize, total: count,
+      totalPages: Math.ceil(count / pagination.pageSize),
     },
   };
 }
@@ -74,8 +77,8 @@ async function create(payload) {
     error.status = 409;
     throw error;
   }
-  if (!payload.password || String(payload.password).length < 8) {
-    const error = new Error('Indique uma palavra-passe com pelo menos 8 caracteres.');
+  if (!isStrongPassword(payload.password)) {
+    const error = new Error(PASSWORD_MESSAGE);
     error.status = 400;
     throw error;
   }
@@ -104,11 +107,19 @@ async function update(id, payload) {
     error.status = 409;
     throw error;
   }
+  if (payload.password && !isStrongPassword(payload.password)) {
+    const error = new Error(PASSWORD_MESSAGE);
+    error.status = 400;
+    throw error;
+  }
   await customer.update({
     nome: `${payload.firstName || currentName.firstName} ${payload.lastName ?? currentName.lastName}`.trim(),
     email,
     phone: payload.phone ?? customer.phone,
-    ...(payload.password ? { password: await bcrypt.hash(String(payload.password), 10) } : {}),
+    ...(payload.password ? {
+      password: await bcrypt.hash(String(payload.password), 10),
+      authVersion: Number(customer.authVersion || 0) + 1,
+    } : {}),
   });
   return toCustomer(customer);
 }

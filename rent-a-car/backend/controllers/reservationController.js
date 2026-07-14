@@ -8,21 +8,8 @@ const {
 } = require('../utils/dateHelpers');
 const { notify } = require('../services/notificationService');
 const { getSetting } = require('../services/settingService');
-
-async function completeExpiredReservations() {
-  const today = new Date().toISOString().slice(0, 10);
-  const expired = await Reservation.findAll({ where: { estado: 'confirmada', data_fim: { [Op.lt]: today } }, attributes: ['id', 'userId'] });
-  if (!expired.length) return;
-  await Reservation.update({ estado: 'concluida' }, { where: { id: { [Op.in]: expired.map((item) => item.id) } } });
-  await Promise.all(expired.map((reservation) => notify({
-    userId: reservation.userId,
-    type: 'reserva_concluida',
-    title: 'Reserva concluída',
-    message: `A reserva #${reservation.id} foi concluída. Já pode avaliar a experiência.`,
-    link: '/cliente/avaliacoes',
-    eventKey: `reservation-completed:${reservation.id}`,
-  })));
-}
+const { blockingReservationWhere, PENDING_TIMEOUT_MINUTES } = require('../services/reservationLifecycleService');
+const { isStrongPassword, PASSWORD_MESSAGE } = require('../utils/passwordPolicy');
 
 function httpError(status, message) {
   const error = new Error(message);
@@ -93,27 +80,21 @@ async function createReservation(req, res, next) {
       });
     }
 
-    const userId = isAdminOrGestor(req.user) ? req.body.userId || req.user.id : req.user.id;
+    if (isAdminOrGestor(req.user) && !req.body.userId) {
+      return res.status(400).json({ message: 'Selecione o cliente da reserva.' });
+    }
+    const userId = isAdminOrGestor(req.user) ? req.body.userId : req.user.id;
     const initialStatus = isAdminOrGestor(req.user) && estado ? estado : 'pendente';
     if (!['pendente', 'confirmada'].includes(initialStatus)) {
       return res.status(400).json({ message: 'Uma nova reserva deve ficar pendente ou confirmada.' });
     }
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    const pickupDate = new Date(`${data_inicio}T00:00:00Z`);
-    const returnDate = new Date(`${data_fim}T00:00:00Z`);
-
-    if (pickupDate < today) {
+    const today = new Date().toISOString().slice(0, 10);
+    if (String(data_inicio).slice(0, 10) < today) {
       return res.status(400).json({ message: 'O levantamento nao pode ser anterior a data atual.' });
     }
 
-    if (returnDate <= pickupDate) {
-      return res.status(400).json({ message: 'A devolucao deve ser posterior ao levantamento.' });
-    }
-
     const user = await User.findByPk(userId);
-    if (!user) {
+    if (!user || user.tipo !== 'cliente') {
       return res.status(404).json({ message: 'Utilizador nao encontrado.' });
     }
 
@@ -129,18 +110,41 @@ async function createReservation(req, res, next) {
     }
 
     const { inicio, fim } = normalizeDateRange(data_inicio, data_fim);
+    const days = calculateDaysBetween(inicio, fim);
+    const maxRentalDays = Math.max(1, Number(process.env.MAX_RENTAL_DAYS || 30));
+    if (days > maxRentalDays) {
+      return res.status(400).json({ message: `Uma reserva não pode exceder ${maxRentalDays} dias.` });
+    }
     const transaction = await sequelize.transaction();
     try {
+      await sequelize.query('SELECT pg_advisory_xact_lock(:userLock)', {
+        replacements: { userLock: -Number(userId) },
+        transaction,
+      });
       await sequelize.query('SELECT pg_advisory_xact_lock(:vehicleId)', {
         replacements: { vehicleId: Number(vehicleId) },
         transaction,
       });
 
+    if (!isAdminOrGestor(req.user)) {
+      const pendingCount = await Reservation.count({
+        where: {
+          userId,
+          estado: 'pendente',
+          createdAt: { [Op.gte]: new Date(Date.now() - PENDING_TIMEOUT_MINUTES * 60 * 1000) },
+        },
+        transaction,
+      });
+      if (pendingCount >= 3) {
+        await transaction.rollback();
+        return res.status(429).json({ message: 'Tem demasiadas reservas pendentes. Confirme ou cancele uma antes de continuar.' });
+      }
+    }
+
     const overlappingReservation = await Reservation.findOne({
       where: {
         vehicleId,
-        estado: { [Op.ne]: 'cancelada' },
-        ...buildOverlapWhere(inicio, fim),
+        ...blockingReservationWhere(inicio, fim),
       },
       transaction,
     });
@@ -167,7 +171,6 @@ async function createReservation(req, res, next) {
       });
     }
 
-    const days = calculateDaysBetween(inicio, fim);
     const safeExtras = { gps: extras.gps === true, insurance: extras.insurance === true, childSeat: Math.min(3, Math.max(0, Number(extras.childSeat) || 0)) };
     const extrasPerDay = (safeExtras.gps ? 10 : 0) + (safeExtras.insurance ? 25 : 0) + (safeExtras.childSeat * 5);
     const preco_estimado = (Number(vehicle.pricePerDay) + extrasPerDay) * days;
@@ -199,7 +202,6 @@ async function createReservation(req, res, next) {
 
 async function listReservations(req, res, next) {
   try {
-    await completeExpiredReservations();
     const accessWhere = isAdminOrGestor(req.user) ? {} : { userId: req.user.id };
     const where = { ...accessWhere };
     const page = Math.max(1, Number(req.query.page || 1));
@@ -287,7 +289,6 @@ async function listReservations(req, res, next) {
 
 async function getReservation(req, res, next) {
   try {
-    await completeExpiredReservations();
     const reservation = await Reservation.findByPk(req.params.id, {
       include: [
         { model: User, as: 'user' },
@@ -295,9 +296,7 @@ async function getReservation(req, res, next) {
       ],
     });
 
-    if (!reservation) {
-      return res.status(404).json({ message: 'Reserva nao encontrada.' });
-    }
+    if (!reservation) throw httpError(404, 'Reserva nao encontrada.');
 
     if (!isAdminOrGestor(req.user) && reservation.userId !== req.user.id) {
       return res.status(403).json({ message: 'Forbidden' });
@@ -312,7 +311,7 @@ async function getReservation(req, res, next) {
 async function updateReservation(req, res, next) {
   try {
     const reservation = await sequelize.transaction(async (transaction) => {
-      const current = await Reservation.findByPk(req.params.id, { transaction });
+      const current = await Reservation.findByPk(req.params.id, { transaction, lock: transaction.LOCK.UPDATE });
       if (!current) throw httpError(404, 'Reserva não encontrada.');
       if (!isAdminOrGestor(req.user) && current.userId !== req.user.id) throw httpError(403, 'Sem acesso a esta reserva.');
 
@@ -327,13 +326,20 @@ async function updateReservation(req, res, next) {
       if (estado !== undefined && (!isAdminOrGestor(req.user) || !['pendente', 'confirmada', 'concluida', 'cancelada'].includes(estado))) {
         throw httpError(isAdminOrGestor(req.user) ? 400 : 403, 'Estado de reserva inválido.');
       }
+      if (estado !== undefined && ['cancelada', 'concluida'].includes(current.estado) && estado !== current.estado) {
+        throw httpError(409, 'Uma reserva cancelada ou concluída tem um estado definitivo.');
+      }
+      if (current.estado === 'confirmada' && estado === 'pendente') throw httpError(409, 'Uma reserva confirmada não pode voltar ao estado pendente.');
+      if (estado === 'concluida' && nextEnd > today) throw httpError(409, 'A reserva só pode ser concluída depois da data de devolução.');
 
       const { inicio, fim } = normalizeDateRange(nextStart, nextEnd);
       const lockIds = [...new Set([Number(current.vehicleId), nextVehicleId])].sort((a, b) => a - b);
       for (const vehicleLockId of lockIds) await sequelize.query('SELECT pg_advisory_xact_lock(:vehicleId)', { replacements: { vehicleId: vehicleLockId }, transaction });
       const vehicle = await Vehicle.findByPk(nextVehicleId, { transaction });
       if (!vehicle) throw httpError(404, 'Veículo não encontrado.');
-      const conflict = await Reservation.findOne({ where: { id: { [Op.ne]: current.id }, vehicleId: nextVehicleId, estado: { [Op.ne]: 'cancelada' }, ...buildOverlapWhere(inicio, fim) }, transaction });
+      const maxRentalDays = Math.max(1, Number(process.env.MAX_RENTAL_DAYS || 30));
+      if (calculateDaysBetween(inicio, fim) > maxRentalDays) throw httpError(400, `Uma reserva não pode exceder ${maxRentalDays} dias.`);
+      const conflict = await Reservation.findOne({ where: { id: { [Op.ne]: current.id }, vehicleId: nextVehicleId, ...blockingReservationWhere(inicio, fim) }, transaction });
       if (conflict) throw httpError(409, 'Já existe uma reserva que sobrepõe este intervalo.');
       const unavailable = await Unavailability.findOne({ where: { vehicleId: nextVehicleId, ...buildOverlapWhere(inicio, fim) }, transaction });
       if (unavailable) throw httpError(409, 'O veículo está indisponível neste intervalo.');
@@ -348,7 +354,10 @@ async function updateReservation(req, res, next) {
       return current;
     });
     await notify({ userId: reservation.userId, type: 'reserva_alterada', title: 'Reserva alterada', message: `A reserva ${reservation.reference || `#${reservation.id}`} foi atualizada.`, link: '/cliente/minhas-reservas' });
-    return res.json(toReservationResponse(reservation));
+    const refreshed = await Reservation.findByPk(reservation.id, {
+      include: [{ model: User, as: 'user' }, { model: Vehicle, as: 'vehicle' }],
+    });
+    return res.json(toReservationResponse(refreshed));
   } catch (error) {
     return next(error);
   }
@@ -373,8 +382,8 @@ async function createReservationCustomer(req, res, next) {
     if (!name || !email || !password) {
       return res.status(400).json({ message: 'Nome, email e palavra-passe são obrigatórios.' });
     }
-    if (String(password).length < 8) {
-      return res.status(400).json({ message: 'A palavra-passe deve ter pelo menos 8 caracteres.' });
+    if (!isStrongPassword(password)) {
+      return res.status(400).json({ message: PASSWORD_MESSAGE });
     }
     const normalizedEmail = String(email).trim().toLowerCase();
     if (await User.findOne({ where: { email: normalizedEmail } })) {
@@ -394,36 +403,31 @@ async function createReservationCustomer(req, res, next) {
 
 async function cancelReservation(req, res, next) {
   try {
-    const reservation = await Reservation.findByPk(req.params.id);
+    const cancellationHours = Number(await getSetting('cancellationHours', 48));
+    const reservation = await sequelize.transaction(async (transaction) => {
+      const current = await Reservation.findByPk(req.params.id, { transaction, lock: transaction.LOCK.UPDATE });
+      if (!current) throw httpError(404, 'Reserva nao encontrada.');
+      if (!isAdminOrGestor(req.user) && current.userId !== req.user.id) throw httpError(403, 'Sem acesso a esta reserva.');
+      if (current.estado === 'cancelada') throw httpError(409, 'A reserva ja se encontra cancelada.');
 
-    if (!reservation) {
-      return res.status(404).json({ message: 'Reserva nao encontrada.' });
-    }
-
-    if (!isAdminOrGestor(req.user) && reservation.userId !== req.user.id) {
-      return res.status(403).json({ message: 'Forbidden' });
-    }
-
-    if (reservation.estado === 'cancelada') {
-      return res.status(409).json({ message: 'A reserva ja se encontra cancelada.' });
-    }
-
-    if (!isAdminOrGestor(req.user)) {
-      const cancellationHours = Number(await getSetting('cancellationHours', 48));
-      const cutoff = new Date();
-      cutoff.setHours(cutoff.getHours() + cancellationHours);
-      const pickupDate = new Date(`${reservation.data_inicio}T00:00:00`);
-      if (pickupDate < cutoff) {
-        return res.status(409).json({ message: `O cancelamento deve ser feito com pelo menos ${cancellationHours} horas de antecedência.` });
+      if (!isAdminOrGestor(req.user)) {
+        const cutoff = new Date();
+        cutoff.setHours(cutoff.getHours() + cancellationHours);
+        const pickupDate = new Date(`${current.data_inicio}T00:00:00`);
+        if (pickupDate < cutoff) throw httpError(409, `O cancelamento deve ser feito com pelo menos ${cancellationHours} horas de antecedência.`);
       }
-    }
 
-    reservation.estado = 'cancelada';
-    await reservation.save();
+      current.estado = 'cancelada';
+      await current.save({ transaction });
+      return current;
+    });
 
     await notify({ userId: reservation.userId, type: 'reserva_cancelada', title: 'Reserva cancelada', message: `A reserva ${reservation.reference || `#${reservation.id}`} foi cancelada.`, link: '/cliente/historico' });
 
-    return res.json(toReservationResponse(reservation));
+    const refreshed = await Reservation.findByPk(reservation.id, {
+      include: [{ model: User, as: 'user' }, { model: Vehicle, as: 'vehicle' }],
+    });
+    return res.json(toReservationResponse(refreshed));
   } catch (error) {
     return next(error);
   }
@@ -445,55 +449,72 @@ async function updateReservationStatus(req, res, next) {
       });
     }
 
-    const reservation = await Reservation.findByPk(id, {
-      include: [{ model: Vehicle, as: 'vehicle' }],
-    });
+    const transaction = await sequelize.transaction();
+    let reservation;
+    try {
+      reservation = await Reservation.findByPk(id, {
+        include: [{ model: Vehicle, as: 'vehicle' }],
+        transaction,
+        lock: transaction.LOCK.UPDATE,
+      });
 
-    if (!reservation) {
-      return res.status(404).json({ message: 'Reserva nao encontrada.' });
+    if (!reservation) throw httpError(404, 'Reserva nao encontrada.');
+
+    if (['cancelada', 'concluida'].includes(reservation.estado) && estado !== reservation.estado) {
+      throw httpError(409, 'Uma reserva cancelada ou concluída tem um estado definitivo.');
+    }
+    if (reservation.estado === 'confirmada' && estado === 'pendente') {
+      throw httpError(409, 'Uma reserva confirmada não pode voltar ao estado pendente.');
+    }
+    if (estado === 'concluida' && reservation.data_fim > new Date().toISOString().slice(0, 10)) {
+      throw httpError(409, 'A reserva só pode ser concluída depois da data de devolução.');
     }
 
     if (estado === 'confirmada') {
+      if (reservation.estado === 'pendente' && reservation.createdAt < new Date(Date.now() - PENDING_TIMEOUT_MINUTES * 60 * 1000)) {
+        throw httpError(409, 'Esta reserva pendente já expirou e não pode ser confirmada.');
+      }
       const { inicio, fim } = normalizeDateRange(
         reservation.data_inicio,
         reservation.data_fim
       );
 
+      await sequelize.query('SELECT pg_advisory_xact_lock(:vehicleId)', { replacements: { vehicleId: Number(reservation.vehicleId) }, transaction });
       const conflictReservation = await Reservation.findOne({
         where: {
           id: { [Op.ne]: reservation.id },
           vehicleId: reservation.vehicleId,
-          estado: { [Op.ne]: 'cancelada' },
-          ...buildOverlapWhere(inicio, fim),
+          ...blockingReservationWhere(inicio, fim),
         },
+        transaction,
       });
 
-      if (conflictReservation) {
-        return res.status(409).json({
-          message: 'Nao foi possivel confirmar porque existe conflito de datas.',
-        });
-      }
+      if (conflictReservation) throw httpError(409, 'Nao foi possivel confirmar porque existe conflito de datas.');
 
       const conflictUnavailability = await Unavailability.findOne({
         where: {
           vehicleId: reservation.vehicleId,
           ...buildOverlapWhere(inicio, fim),
-        },
+        }, transaction,
       });
 
-      if (conflictUnavailability) {
-        return res.status(409).json({
-          message: 'Nao foi possivel confirmar porque o veiculo esta indisponivel.',
-        });
-      }
+      if (conflictUnavailability) throw httpError(409, 'Nao foi possivel confirmar porque o veiculo esta indisponivel.');
     }
 
     reservation.estado = estado;
-    await reservation.save();
+    await reservation.save({ transaction });
+    await transaction.commit();
+    } catch (transactionError) {
+      if (!transaction.finished) await transaction.rollback();
+      throw transactionError;
+    }
 
     await notify({ userId: reservation.userId, type: 'estado_reserva', title: 'Estado da reserva atualizado', message: `A reserva ${reservation.reference || `#${reservation.id}`} está agora ${estado === 'concluida' ? 'concluída' : estado}.`, link: estado === 'concluida' || estado === 'cancelada' ? '/cliente/historico' : '/cliente/minhas-reservas' });
 
-    return res.json(toReservationResponse(reservation));
+    const refreshed = await Reservation.findByPk(reservation.id, {
+      include: [{ model: User, as: 'user' }, { model: Vehicle, as: 'vehicle' }],
+    });
+    return res.json(toReservationResponse(refreshed));
   } catch (error) {
     return next(error);
   }

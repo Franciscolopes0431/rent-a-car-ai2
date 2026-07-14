@@ -31,15 +31,7 @@ export function useDashboardData() {
 
         setStats(statsResponse.data || null);
         setRecentBookings(Array.isArray(bookingsResponse.data?.data) ? bookingsResponse.data.data : []);
-        const vehicles = Array.isArray(fleetResponse.data?.data) ? fleetResponse.data.data : [];
-        setFleet({
-          summary: {
-            available: vehicles.filter((vehicle) => vehicle.status === 'Disponível').length,
-            reserved: vehicles.filter((vehicle) => vehicle.status === 'Reservado').length,
-            maintenance: vehicles.filter((vehicle) => vehicle.status === 'Manutenção').length,
-          },
-          vehicles: vehicles.slice(0, 5),
-        });
+        setFleet(fleetResponse.data || { summary: {}, vehicles: [] });
         setAlerts(Array.isArray(alertsResponse.data) ? alertsResponse.data : []);
         setError(null);
       } catch (err) {

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Alert, Button, Col, Container, Form, Row, Spinner } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import * as vehicleService from '../../services/vehicleService';
+import { calculateRentalDays, validateReservationDates } from '../../utils/reservationDates';
 
 const money = new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR' });
 
@@ -16,7 +17,8 @@ function NewReservationPage() {
 
   const search = async (event) => {
     event.preventDefault();
-    if (!criteria.pickup || !criteria.returnDate || criteria.pickup < today || criteria.returnDate <= criteria.pickup) { setError('Escolha um levantamento a partir de hoje e uma devolução posterior.'); return; }
+    const dateError = validateReservationDates(criteria.pickup, criteria.returnDate, today);
+    if (dateError) { setError(dateError); return; }
     setLoading(true); setError(''); setSearched(true);
     try { const response = await vehicleService.available({ data_inicio: criteria.pickup, data_fim: criteria.returnDate }); setVehicles(Array.isArray(response.data) ? response.data : []); }
     catch (requestError) { setVehicles([]); setError(requestError.response?.data?.message || 'Não foi possível consultar a disponibilidade.'); }
@@ -28,7 +30,7 @@ function NewReservationPage() {
     navigate(`/cliente/reserva/checkout?${params.toString()}`);
   };
 
-  const days = criteria.pickup && criteria.returnDate ? Math.max(1, Math.ceil((new Date(criteria.returnDate) - new Date(criteria.pickup)) / 86400000)) : 1;
+  const days = calculateRentalDays(criteria.pickup, criteria.returnDate);
 
   return <Container fluid className="py-4 rc-new-reservation"><section className="rc-client-welcome mb-4"><div><span className="rc-eyebrow">Nova reserva</span><h1>Para onde vamos?</h1><p>Escolha as datas e mostramos apenas viaturas realmente disponíveis.</p></div><div className="rc-reservation-step"><span className="is-active">1</span><i /><span>2</span><i /><span>3</span></div></section>
     <Row className="g-4"><Col xl={4}><Form onSubmit={search} className="rc-card rc-reservation-search"><div className="rc-card-header"><h2>Datas da viagem</h2></div><Form.Group className="mb-3"><Form.Label>Local de levantamento</Form.Label><Form.Select value={criteria.location} onChange={(e) => setCriteria({ ...criteria, location: e.target.value })}><option>Lisboa - Aeroporto</option><option>Porto - Aeroporto</option><option>Faro - Aeroporto</option></Form.Select></Form.Group><Row><Col md={6} xl={12}><Form.Group className="mb-3"><Form.Label>Levantamento</Form.Label><Form.Control required type="date" min={today} value={criteria.pickup} onChange={(e) => setCriteria({ ...criteria, pickup: e.target.value, returnDate: criteria.returnDate <= e.target.value ? '' : criteria.returnDate })} /></Form.Group></Col><Col md={6} xl={12}><Form.Group className="mb-4"><Form.Label>Devolução</Form.Label><Form.Control required type="date" min={criteria.pickup || today} value={criteria.returnDate} onChange={(e) => setCriteria({ ...criteria, returnDate: e.target.value })} /></Form.Group></Col></Row>{error ? <Alert variant="danger" className="small">{error}</Alert> : null}<Button className="w-100" variant="warning" type="submit" disabled={loading}>{loading ? 'A procurar...' : <><i className="bi bi-search me-2" />Ver disponibilidade</>}</Button><p className="small text-secondary text-center mt-3 mb-0"><i className="bi bi-shield-check me-1" />Sem cobrança nesta etapa</p></Form></Col>

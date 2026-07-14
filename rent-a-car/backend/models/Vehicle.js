@@ -30,7 +30,7 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         field: 'price_per_day',
         validate: {
-          min: 0,
+          min: 0.01,
         },
       },
       status: {

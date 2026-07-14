@@ -6,7 +6,7 @@ function errorHandler(err, req, res, next) {
   }
 
   return res.status(statusCode).json({
-    message: err.message || 'Erro interno do servidor.',
+    message: statusCode >= 500 ? 'Ocorreu um erro interno. Tente novamente mais tarde.' : (err.message || 'Pedido inválido.'),
   });
 }
 

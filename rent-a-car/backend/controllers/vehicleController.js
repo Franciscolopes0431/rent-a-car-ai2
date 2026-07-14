@@ -12,11 +12,17 @@ async function listVehicles(req, res, next) {
 
 async function getVehicle(req, res, next) {
   try {
-    const vehicle = await vehicleService.findById(req.params.id);
+    const vehicle = await vehicleService.findPublicById(req.params.id);
     return res.json(vehicle);
   } catch (error) {
     return next(error);
   }
+}
+
+async function getManagedVehicle(req, res, next) {
+  try {
+    return res.json(await vehicleService.findManagedById(req.params.id));
+  } catch (error) { return next(error); }
 }
 
 async function createVehicle(req, res, next) {
@@ -69,6 +75,7 @@ async function changeVehicleStatus(req, res, next) {
 module.exports = {
   listVehicles,
   getVehicle,
+  getManagedVehicle,
   createVehicle,
   updateVehicle,
   deleteVehicle,

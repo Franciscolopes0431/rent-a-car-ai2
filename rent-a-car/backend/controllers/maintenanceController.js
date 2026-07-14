@@ -1,5 +1,8 @@
 const maintenanceService = require('../services/maintenanceService');
 
+const ALLOWED_FIELDS = ['vehicleId', 'type', 'description', 'unavailableUntil'];
+const cleanPayload = (body) => Object.fromEntries(Object.entries(body || {}).filter(([key]) => ALLOWED_FIELDS.includes(key)));
+
 async function listMaintenance(req, res, next) {
   try {
     const result = await maintenanceService.list(req.query);
@@ -20,7 +23,7 @@ async function getMaintenance(req, res, next) {
 
 async function createMaintenance(req, res, next) {
   try {
-    const alert = await maintenanceService.create(req.body);
+    const alert = await maintenanceService.create(cleanPayload(req.body));
     return res.status(201).json(alert);
   } catch (error) {
     return next(error);
@@ -29,7 +32,7 @@ async function createMaintenance(req, res, next) {
 
 async function updateMaintenance(req, res, next) {
   try {
-    const alert = await maintenanceService.update(req.params.id, req.body);
+    const alert = await maintenanceService.update(req.params.id, cleanPayload(req.body));
     return res.json(alert);
   } catch (error) {
     return next(error);

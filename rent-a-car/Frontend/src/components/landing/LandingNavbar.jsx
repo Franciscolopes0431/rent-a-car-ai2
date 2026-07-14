@@ -12,8 +12,8 @@ function LandingNavbar() {
       ? '/gestor'
       : '/cliente';
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     navigate('/');
   };
 

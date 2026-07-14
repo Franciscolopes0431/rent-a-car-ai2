@@ -2,9 +2,6 @@ const express = require('express');
 const {
   login,
   register,
-  checkEmail,
-  googleAuth,
-  appleAuth,
   updateProfile,
   updatePassword,
   getProfile,
@@ -13,12 +10,10 @@ const {
 const { authenticate } = require('../middleware/authMiddleware');
 
 const router = express.Router();
+const { loginLimiter, registrationLimiter } = require('../middleware/rateLimiters');
 
-router.post('/login', login);
-router.post('/register', register);
-router.get('/check-email', checkEmail);
-router.post('/google', googleAuth);
-router.post('/apple', appleAuth);
+router.post('/login', loginLimiter, login);
+router.post('/register', registrationLimiter, register);
 router.put('/me', authenticate, updateProfile);
 router.put('/password', authenticate, updatePassword);
 router.get('/me', authenticate, getProfile);

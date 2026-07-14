@@ -26,7 +26,7 @@ function ClientSidebar({ onNavigate }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const initials = (user?.name || 'Cliente').split(' ').slice(0, 2).map((part) => part[0]).join('').toUpperCase();
-  const handleLogout = () => { logout(); navigate('/login'); };
+  const handleLogout = async () => { await logout(); navigate('/login'); };
 
   return <aside className="rc-sidebar rc-client-sidebar"><div className="rc-sidebar-logo-wrap"><Link to="/" onClick={onNavigate} className="rc-sidebar-home-link" aria-label="Voltar à página inicial"><Logo /></Link></div><nav className="rc-sidebar-nav" aria-label="Navegação do cliente"><span className="rc-sidebar-section-label">Principal</span><SidebarLinks items={MAIN_ITEMS} onNavigate={onNavigate} /><span className="rc-sidebar-section-label mt-3">Conta</span><SidebarLinks items={ACCOUNT_ITEMS} onNavigate={onNavigate} /></nav><div className="rc-client-sidebar-footer"><div className="rc-client-user"><span className="rc-client-avatar" aria-hidden="true">{initials}</span><div><strong>{user?.name || 'Cliente'}</strong><span>{user?.email || ''}</span></div></div><button type="button" className="rc-client-logout" onClick={handleLogout}><i className="bi bi-box-arrow-right" />Terminar sessão</button></div></aside>;
 }

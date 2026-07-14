@@ -4,6 +4,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import * as vehicleService from '../../services/vehicleService';
 import * as bookingService from '../../services/bookingService';
 import { useAuth } from '../../hooks/useAuth';
+import { calculateRentalDays, validateReservationDates } from '../../utils/reservationDates';
 
 function CheckoutPage() {
   const [searchParams] = useSearchParams();
@@ -78,9 +79,7 @@ function CheckoutPage() {
     );
   }
 
-  const days = dates.pickup && dates.return 
-    ? Math.max(1, Math.ceil((new Date(dates.return) - new Date(dates.pickup)) / (1000 * 60 * 60 * 24))) 
-    : 1;
+  const days = calculateRentalDays(dates.pickup, dates.return);
 
   const basePrice = Number(vehicle.pricePerDay) * days;
   const extrasPrice = (extras.gps ? 10 * days : 0) + (extras.childSeat * 5 * days) + (extras.insurance ? 25 * days : 0);
@@ -88,15 +87,8 @@ function CheckoutPage() {
 
   const handleNext = () => {
     if (step === 1) {
-      if (!dates.pickup || !dates.return) {
-        setError('Selecione as datas de levantamento e devolução para continuar.');
-        return;
-      }
-
-      if (dates.pickup < today || dates.return <= dates.pickup) {
-        setError('Escolha um levantamento a partir de hoje e uma devolução posterior.');
-        return;
-      }
+      const dateError = validateReservationDates(dates.pickup, dates.return, today);
+      if (dateError) { setError(dateError); return; }
     }
 
     setError('');
@@ -105,15 +97,8 @@ function CheckoutPage() {
   const handlePrev = () => setStep(s => s - 1);
 
   const handleConfirm = async () => {
-    if (!dates.pickup || !dates.return) {
-      setError('Selecione as datas de levantamento e devolução para continuar.');
-      return;
-    }
-
-    if (new Date(dates.return) <= new Date(dates.pickup)) {
-      setError('A data de devolução tem de ser posterior à data de levantamento.');
-      return;
-    }
+    const dateError = validateReservationDates(dates.pickup, dates.return, today);
+    if (dateError) { setError(dateError); return; }
 
     if (!payment.acceptTerms) {
       setError('Tem de aceitar os termos e condições para prosseguir.');

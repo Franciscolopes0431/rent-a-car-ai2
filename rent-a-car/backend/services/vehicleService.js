@@ -1,7 +1,9 @@
 const { Op } = require('sequelize');
 const { Vehicle, Reservation, User } = require('../models');
+const { normalizePagination } = require('../utils/pagination');
 
 async function list({ status, category, search, page = 1, pageSize = 10 }) {
+  const pagination = normalizePagination(page, pageSize);
   const where = {};
 
   if (status) where.status = status;
@@ -17,22 +19,32 @@ async function list({ status, category, search, page = 1, pageSize = 10 }) {
   const { rows, count } = await Vehicle.findAndCountAll({
     where,
     order: [['updatedAt', 'DESC']],
-    limit: Number(pageSize),
-    offset: (Number(page) - 1) * Number(pageSize),
+    limit: pagination.limit,
+    offset: pagination.offset,
   });
 
   return {
     data: rows,
     pagination: {
-      page: Number(page),
-      pageSize: Number(pageSize),
+      page: pagination.page,
+      pageSize: pagination.pageSize,
       total: count,
-      totalPages: Math.ceil(count / pageSize),
+      totalPages: Math.ceil(count / pagination.pageSize),
     },
   };
 }
 
-async function findById(id) {
+async function findPublicById(id) {
+  const vehicle = await Vehicle.findByPk(id);
+  if (!vehicle) {
+    const error = new Error('Viatura não encontrada');
+    error.status = 404;
+    throw error;
+  }
+  return vehicle;
+}
+
+async function findManagedById(id) {
   const vehicle = await Vehicle.findByPk(id, {
     include: [
       {
@@ -107,6 +119,12 @@ async function remove(id) {
 }
 
 async function changeStatus(id, status) {
+  const allowedStatuses = ['Disponível', 'Reservado', 'Manutenção'];
+  if (!allowedStatuses.includes(status)) {
+    const error = new Error('Estado da viatura inválido.');
+    error.status = 400;
+    throw error;
+  }
   const vehicle = await Vehicle.findByPk(id);
   if (!vehicle) {
     const error = new Error('Viatura não encontrada');
@@ -119,7 +137,8 @@ async function changeStatus(id, status) {
 
 module.exports = {
   list,
-  findById,
+  findPublicById,
+  findManagedById,
   create,
   update,
   remove,

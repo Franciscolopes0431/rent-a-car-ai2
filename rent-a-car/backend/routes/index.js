@@ -9,6 +9,7 @@ const maintenanceRoutes = require('./maintenanceRoutes');
 const reportRoutes = require('./reportRoutes');
 const notificationRoutes = require('./notificationRoutes');
 const adminRoutes = require('./adminRoutes');
+const fleetRoutes = require('./fleetRoutes');
 
 const router = express.Router();
 
@@ -22,5 +23,6 @@ router.use('/maintenance', maintenanceRoutes);
 router.use('/reports', reportRoutes);
 router.use('/notifications', notificationRoutes);
 router.use('/admin', adminRoutes);
+router.use('/fleet', fleetRoutes);
 
 module.exports = router;

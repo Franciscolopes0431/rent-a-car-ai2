@@ -23,11 +23,11 @@ npm run dev
 - `GET /health`
 - `GET /api/vehicles`
 - `POST /api/vehicles`
-- `GET /api/vehicles/available?data_inicio=YYYY-MM-DD&data_fim=YYYY-MM-DD`
+- `GET /api/vehicles/available/search?data_inicio=YYYY-MM-DD&data_fim=YYYY-MM-DD`
 - `GET /api/reservations`
 - `POST /api/reservations`
 - `PATCH /api/reservations/:id/status`
-- `POST /api/unavailability`
+- `GET /api/fleet/status`
 
 ## Models
 
@@ -38,6 +38,6 @@ npm run dev
 
 ## Notas
 
-- O servidor usa `sequelize.sync()` para criar as tabelas automaticamente em ambiente de desenvolvimento.
+- Em desenvolvimento, o servidor cria tabelas em falta. Em produção, `npm start` executa as migrations antes de iniciar a API.
 - A base de dados configurada por omissao e `rent_a_car`.
 - A regra de sobreposicao bloqueia intervalos onde `data_inicio < data_fim_existente` e `data_fim > data_inicio_existente`.

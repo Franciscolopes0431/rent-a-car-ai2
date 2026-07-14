@@ -2,6 +2,7 @@ const { User } = require('../models');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { getJwtSecret } = require('../middleware/authMiddleware');
+const { isStrongPassword, PASSWORD_MESSAGE } = require('../utils/passwordPolicy');
 
 async function verifyPassword(plainPassword, storedPassword, user) {
   if (!plainPassword || !storedPassword) {
@@ -11,18 +12,8 @@ async function verifyPassword(plainPassword, storedPassword, user) {
   const normalizedStored = String(storedPassword).trim();
   const normalizedPlain = String(plainPassword);
 
-  if (normalizedStored.startsWith('$2')) {
-    const match = await bcrypt.compare(normalizedPlain, normalizedStored);
-    return match;
-  }
-
-  if (normalizedStored === normalizedPlain) {
-    const hashedPassword = await bcrypt.hash(normalizedPlain, 10);
-    await user.update({ password: hashedPassword });
-    return true;
-  }
-
-  return false;
+  if (!normalizedStored.startsWith('$2')) return false;
+  return bcrypt.compare(normalizedPlain, normalizedStored);
 }
 
 function toPublicUser(user) {
@@ -57,7 +48,7 @@ async function login(req, res, next) {
       return res.status(401).json({ message: 'Invalid credentials.' });
     }
 
-    const payload = { id: user.id, role: user.tipo, email: user.email, name: user.nome };
+    const payload = { id: user.id, authVersion: Number(user.authVersion || 0) };
     const persistentSession = rememberMe === true;
     const token = jwt.sign(payload, getJwtSecret(), {
       expiresIn: persistentSession ? '30d' : '8h',
@@ -65,7 +56,7 @@ async function login(req, res, next) {
 
     const cookieOptions = {
       httpOnly: true,
-      sameSite: 'strict',
+      sameSite: process.env.COOKIE_SAME_SITE || 'strict',
       secure: process.env.NODE_ENV === 'production',
       path: '/',
     };
@@ -83,7 +74,7 @@ async function login(req, res, next) {
 
 async function register(req, res, next) {
   try {
-    const { nome, email, password, tipo, confirmPassword, acceptTerms } = req.body;
+    const { nome, email, phone, password, confirmPassword, acceptTerms } = req.body;
 
     if (!nome || !email || !password || !confirmPassword) {
       return res.status(400).json({
@@ -93,6 +84,10 @@ async function register(req, res, next) {
 
     if (String(password) !== String(confirmPassword)) {
       return res.status(400).json({ message: 'As passwords nao coincidem.' });
+    }
+
+    if (!isStrongPassword(password)) {
+      return res.status(400).json({ message: PASSWORD_MESSAGE });
     }
 
     if (acceptTerms !== true) {
@@ -110,6 +105,7 @@ async function register(req, res, next) {
     const user = await User.create({
       nome: String(nome).trim(),
       email: normalizedEmail,
+      phone: phone ? String(phone).trim().slice(0, 30) : null,
       password: hashed,
       tipo: 'cliente',
     });
@@ -121,36 +117,6 @@ async function register(req, res, next) {
   } catch (error) {
     return next(error);
   }
-}
-
-async function checkEmail(req, res, next) {
-  try {
-    const email = String(req.query.email || '').trim().toLowerCase();
-
-    if (!email) {
-      return res.status(400).json({ message: 'Parametro email e obrigatorio.' });
-    }
-
-    const existingUser = await User.findOne({ where: { email } });
-
-    return res.json({
-      available: !existingUser,
-    });
-  } catch (error) {
-    return next(error);
-  }
-}
-
-async function googleAuth(req, res) {
-  return res.status(501).json({
-    message: 'Login com Google ainda nao implementado.',
-  });
-}
-
-async function appleAuth(req, res) {
-  return res.status(501).json({
-    message: 'Login com Apple ainda nao implementado.',
-  });
 }
 
 async function updateProfile(req, res, next) {
@@ -172,14 +138,17 @@ async function updateProfile(req, res, next) {
 async function updatePassword(req, res, next) {
   try {
     const { currentPassword, newPassword } = req.body;
-    if (!currentPassword || !newPassword || String(newPassword).length < 8) {
-      return res.status(400).json({ message: 'Indique a palavra-passe atual e uma nova com pelo menos 8 caracteres.' });
+    if (!currentPassword || !isStrongPassword(newPassword)) {
+      return res.status(400).json({ message: PASSWORD_MESSAGE });
     }
     const user = await User.findByPk(req.user.id);
     if (!user || !(await verifyPassword(currentPassword, user.password, user))) {
       return res.status(400).json({ message: 'A palavra-passe atual está incorreta.' });
     }
-    await user.update({ password: await bcrypt.hash(String(newPassword), 10) });
+    await user.update({
+      password: await bcrypt.hash(String(newPassword), 10),
+      authVersion: Number(user.authVersion || 0) + 1,
+    });
     return res.json({ message: 'Palavra-passe atualizada com sucesso.' });
   } catch (error) {
     return next(error);
@@ -195,7 +164,7 @@ async function getProfile(req, res, next) {
 }
 
 function logout(req, res) {
-  res.clearCookie('rentcar_session', { httpOnly: true, sameSite: 'strict', secure: process.env.NODE_ENV === 'production', path: '/' });
+  res.clearCookie('rentcar_session', { httpOnly: true, sameSite: process.env.COOKIE_SAME_SITE || 'strict', secure: process.env.NODE_ENV === 'production', path: '/' });
   return res.status(204).send();
 }
 
@@ -203,9 +172,6 @@ module.exports = {
   verifyPassword,
   login,
   register,
-  checkEmail,
-  googleAuth,
-  appleAuth,
   updateProfile,
   updatePassword,
   getProfile,

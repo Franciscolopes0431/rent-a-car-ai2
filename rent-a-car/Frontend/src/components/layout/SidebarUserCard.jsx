@@ -9,8 +9,8 @@ function SidebarUserCard() {
   const userName = user?.name || 'Administrador';
   const userEmail = user?.email || 'admin@rentcar.pt';
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     navigate('/login');
   };
 

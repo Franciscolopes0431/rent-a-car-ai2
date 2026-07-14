@@ -39,20 +39,6 @@ test('authenticate rejects requests without a bearer token', () => {
   assert.deepEqual(res.body, { message: 'Not authenticated.' });
 });
 
-test('verifyPassword accepts legacy plaintext passwords and upgrades them to hashes', async () => {
-  const updates = [];
-  const user = {
-    password: 'admin123',
-    async update(payload) {
-      updates.push(payload);
-      return payload;
-    },
-  };
-
-  const result = await verifyPassword('admin123', user.password, user);
-
-  assert.equal(result, true);
-  assert.equal(updates.length, 1);
-  assert.notEqual(updates[0].password, 'admin123');
-  assert.match(updates[0].password, /^\$2[aby]\$/);
+test('verifyPassword rejects plaintext database values after the security migration', async () => {
+  assert.equal(await verifyPassword('admin123', 'admin123', {}), false);
 });

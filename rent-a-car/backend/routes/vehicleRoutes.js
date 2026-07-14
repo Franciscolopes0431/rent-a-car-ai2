@@ -2,6 +2,7 @@ const express = require('express');
 const {
   listVehicles,
   getVehicle,
+  getManagedVehicle,
   createVehicle,
   updateVehicle,
   deleteVehicle,
@@ -14,6 +15,7 @@ const router = express.Router();
 
 router.get('/', listVehicles);
 router.get('/available/search', getAvailableVehicles);
+router.get('/:id/manage', authenticate, authorize(['admin', 'gestor']), getManagedVehicle);
 router.get('/:id', getVehicle);
 router.post('/', authenticate, authorize(['admin', 'gestor']), createVehicle);
 router.put('/:id', authenticate, authorize(['admin', 'gestor']), updateVehicle);

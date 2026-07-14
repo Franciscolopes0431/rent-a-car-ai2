@@ -15,7 +15,7 @@ const sequelize = process.env.DATABASE_URL
           ? {
               ssl: {
                 require: true,
-                rejectUnauthorized: false,
+                rejectUnauthorized: process.env.DB_SSL_REJECT_UNAUTHORIZED !== 'false',
               },
             }
           : {},
@@ -34,7 +34,7 @@ const sequelize = process.env.DATABASE_URL
             ? {
                 ssl: {
                   require: true,
-                  rejectUnauthorized: false,
+                  rejectUnauthorized: process.env.DB_SSL_REJECT_UNAUTHORIZED !== 'false',
                 },
               }
             : {},

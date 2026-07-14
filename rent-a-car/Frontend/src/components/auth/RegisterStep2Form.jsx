@@ -63,6 +63,7 @@ function RegisterStep2Form() {
       const payload = {
         nome: `${registerData.firstName} ${registerData.lastName}`.trim(),
         email: registerData.email,
+        phone: registerData.phone,
         password: formData.password,
         confirmPassword: formData.confirmPassword,
         acceptTerms: formData.acceptTerms,
